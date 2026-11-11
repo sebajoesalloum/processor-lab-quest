@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Processor Lab — browser self-test</title>
+<style>
+ body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;background:#faf8ff;color:#1d1535}
+ h1{margin:.2em 0}.sum{padding:12px 16px;border-radius:10px;font-weight:700;margin:12px 0}
+ .ok{background:#dcfce7;color:#14532d}.bad{background:#fee2e2;color:#7f1d1d}
+ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid #ddd;padding:4px 8px;text-align:left;vertical-align:top}
+ .p{color:#14532d;font-weight:700}.f{color:#7f1d1d;font-weight:700}code,textarea{font:13px ui-monospace,monospace}
+ textarea{width:100%;height:110px}button{font:inherit;padding:6px 14px;border-radius:8px;border:1px solid #7c3aed;background:#7c3aed;color:#fff;cursor:pointer}
+ details{margin:10px 0}
+</style></head><body>
+<h1>Processor Lab — browser self-test</h1>
+<p>Open this file in the browser you will present from. It runs the simulator's engine code and reports PASS/FAIL. It does <b>not</b> check how pages look: after it passes, follow <code>CROSS_BROWSER_CHECKLIST.md</code>.</p>
+<div id="summary" class="sum">Running…</div>
+<p id="ua"></p>
+<table id="rows"><thead><tr><th>Result</th><th>Group</th><th>Check</th><th>Detail</th></tr></thead><tbody></tbody></table>
+<h2>Copy this into your notes</h2><textarea id="report" readonly></textarea><p><button id="copy" type="button">Copy report</button></p>
+<script>
+/*__PROCESSOR_LAB_BUNDLE__*/
+(function(){
+ var rows=runSelfTests(),pass=rows.filter(function(r){return r.ok}).length,fail=rows.length-pass;
+ var s=document.getElementById('summary');s.className='sum '+(fail?'bad':'ok');
+ s.textContent=fail?('FAIL — '+fail+' of '+rows.length+' checks failed. Do not present from this browser until fixed.'):('PASS — all '+rows.length+' checks passed.');
+ document.getElementById('ua').textContent='Browser: '+navigator.userAgent;
+ var tb=document.querySelector('#rows tbody'),lines=['Processor Lab self-test','Browser: '+navigator.userAgent,'Result: '+pass+'/'+rows.length+' passed',''];
+ rows.forEach(function(r){var tr=document.createElement('tr');[r.ok?'PASS':'FAIL',r.group,r.name,r.detail].forEach(function(v,i){var td=document.createElement('td');td.textContent=v;if(i===0)td.className=r.ok?'p':'f';tr.appendChild(td)});tb.appendChild(tr);if(!r.ok)lines.push('FAIL ['+r.group+'] '+r.name+' — '+r.detail)});
+ if(!fail)lines.push('No failures.');
+ var ta=document.getElementById('report');ta.value=lines.join('\n');
+ document.getElementById('copy').onclick=function(){ta.select();try{document.execCommand('copy')}catch(e){}};
+})();
+</script></body></html>

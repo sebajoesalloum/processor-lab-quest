@@ -1,0 +1,7 @@
+107 programs assembled by both the project and GNU as; 107 identical.
+PASS out-of-range agreement: bge one word past -4096 (project rejects; GNU cannot emit a single B-type branch)
+PASS out-of-range agreement: beq forward past +4094 (project rejects; GNU cannot emit a single B-type branch)
+
+Reference: GNU assembler (GNU Binutils for Ubuntu) 2.42
+Reference: GNU assembler (GNU Binutils for Ubuntu) 2.42
+Compared 24004 encoded 32-bit words; 0 mismatches.

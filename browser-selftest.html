@@ -1,0 +1,2986 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Processor Lab — browser self-test</title>
+<style>
+ body{font:16px/1.5 system-ui,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;background:#faf8ff;color:#1d1535}
+ h1{margin:.2em 0}.sum{padding:12px 16px;border-radius:10px;font-weight:700;margin:12px 0}
+ .ok{background:#dcfce7;color:#14532d}.bad{background:#fee2e2;color:#7f1d1d}
+ table{border-collapse:collapse;width:100%;font-size:14px}td,th{border-bottom:1px solid #ddd;padding:4px 8px;text-align:left;vertical-align:top}
+ .p{color:#14532d;font-weight:700}.f{color:#7f1d1d;font-weight:700}code,textarea{font:13px ui-monospace,monospace}
+ textarea{width:100%;height:110px}button{font:inherit;padding:6px 14px;border-radius:8px;border:1px solid #7c3aed;background:#7c3aed;color:#fff;cursor:pointer}
+ details{margin:10px 0}
+</style></head><body>
+<h1>Processor Lab — browser self-test</h1>
+<p>Open this file in the browser you will present from. It runs the simulator's engine code and reports PASS/FAIL. It does <b>not</b> check how pages look: after it passes, follow <code>CROSS_BROWSER_CHECKLIST.md</code>.</p>
+<div id="summary" class="sum">Running…</div>
+<p id="ua"></p>
+<table id="rows"><thead><tr><th>Result</th><th>Group</th><th>Check</th><th>Detail</th></tr></thead><tbody></tbody></table>
+<h2>Copy this into your notes</h2><textarea id="report" readonly></textarea><p><button id="copy" type="button">Copy report</button></p>
+<script>
+
+/* ===== src/util.js ===== */
+/* Shared helpers. */
+const esc = (s) =>
+  String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+/* Portable own-property check (the newer built-in needs Safari 15.4 / Firefox 92). */
+const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+
+/* ===== src/engine.js ===== */
+
+const NAMES = { A: 0, B: 1, C: 2, OUT: 3, T: 4, D: 5, E: 6, Z: 7, ONE: 8, N: 0 },
+  LIM = 2000,
+  VER = 'Processor Lab v4.0 (pipeline, cache and ISA teaching models)';
+const nr = (n) =>
+  String(n)
+    .replace('$', '')
+    .replace(/^r([a-d]x|di|si)$/, 'e$1');
+const REGISTER_SETS = {
+  mips: new Set([
+    'zero',
+    'at',
+    'v0',
+    'v1',
+    ...Array.from({ length: 4 }, (_, i) => 'a' + i),
+    ...Array.from({ length: 10 }, (_, i) => 't' + i),
+    ...Array.from({ length: 8 }, (_, i) => 's' + i),
+    'k0',
+    'k1',
+    'gp',
+    'sp',
+    'fp',
+    'ra',
+  ]),
+  rv: new Set([
+    'zero',
+    'ra',
+    'sp',
+    'gp',
+    'tp',
+    ...Array.from({ length: 32 }, (_, i) => 'x' + i),
+    ...Array.from({ length: 7 }, (_, i) => 't' + i),
+    ...Array.from({ length: 8 }, (_, i) => 'a' + i),
+    ...Array.from({ length: 12 }, (_, i) => 's' + i),
+  ]),
+  x86: new Set(['eax', 'ebx', 'ecx', 'edx', 'esi', 'edi', 'rdi', 'rsi', 'rax', 'rbx', 'rcx', 'rdx']),
+};
+const RV_ALIAS = {
+  zero: 0,
+  ra: 1,
+  sp: 2,
+  gp: 3,
+  tp: 4,
+  t0: 5,
+  t1: 6,
+  t2: 7,
+  s0: 8,
+  s1: 9,
+  a0: 10,
+  a1: 11,
+  a2: 12,
+  a3: 13,
+  a4: 14,
+  a5: 15,
+  a6: 16,
+  a7: 17,
+  s2: 18,
+  s3: 19,
+  s4: 20,
+  s5: 21,
+  s6: 22,
+  s7: 23,
+  s8: 24,
+  s9: 25,
+  s10: 26,
+  s11: 27,
+  t3: 28,
+  t4: 29,
+  t5: 30,
+  t6: 31,
+};
+const canon = (s, n) => {
+  n = nr(n);
+  if (!REGISTER_SETS[s.id]?.has(n)) throw Error('invalid ' + s.id + ' register ' + n);
+  return s.id === 'rv' ? 'x' + (RV_ALIAS[n] ?? Number(n.slice(1))) : n;
+};
+const rg = (s, n) => {
+  n = canon(s, n);
+  if (n === 'zero' || n === 'x0') return 0;
+  return s.r[n] | 0;
+};
+const sr = (s, n, v) => {
+  n = canon(s, n);
+  if (n === 'zero' || n === 'x0') return;
+  s.r[n] = v | 0;
+};
+const ea = (a) => {
+  let m = a.match(/^(-?\d+)\((\$?[a-zA-Z][\w]*)\)$/);
+  if (m) return [m[2], +m[1]];
+  m = a.match(/^\[([a-zA-Z][\w]*)(?:\+(-?\d+))?\]$/);
+  if (m) return [m[1], +(m[2] || 0)];
+  throw Error('invalid memory operand ' + a);
+};
+const mem = (s, a, v) => {
+  const [r, o] = ea(a),
+    d = rg(s, r) + o;
+  if (!Number.isSafeInteger(d) || d % 4 || d < 0 || d >= 64) throw Error('invalid or unaligned address ' + d);
+  s.t.add(d / 4);
+  if (v === undefined) {
+    s.c.rd++;
+    s.accesses.push({ type: 'read', address: d, cell: d / 4, value: s.m[d / 4] | 0 });
+    return s.m[d / 4];
+  }
+  s.c.wr++;
+  s.accesses.push({ type: 'write', address: d, cell: d / 4, value: v | 0 });
+  s.m[d / 4] = v | 0;
+};
+const al = (f) => (s, x) => {
+  const v = f(rg(s, x[1]), rg(s, x[2])) | 0;
+  sr(s, x[0], v);
+  return x[0] + ' = ' + v;
+};
+const bq = (e) => (s, x) => {
+  const t = (rg(s, x[0]) == rg(s, x[1])) == e;
+  if (t) s.pc = x.tg;
+  return t ? 'branch TAKEN, PC=' + x.tg : 'branch not taken';
+};
+const rop = (a, u, i) => ({
+  lw: [
+    ['load', 'ld'],
+    (s, x) => {
+      const v = mem(s, x[1]);
+      sr(s, x[0], v);
+      return x[0] + ' ← ' + v;
+    },
+  ],
+  sw: [
+    ['store', 'st'],
+    (s, x) => {
+      const v = rg(s, x[0]);
+      mem(s, x[1], v);
+      return 'MEM ← ' + v;
+    },
+  ],
+  [a]: [['arith', 'alu'], al((p, q) => p + q)],
+  [u]: [['arith', 'alu'], al((p, q) => p - q)],
+  [i]: [
+    ['arith', 'alu'],
+    (s, x) => {
+      const v = (rg(s, x[1]) + +x[2]) | 0;
+      sr(s, x[0], v);
+      return x[0] + ' = ' + v;
+    },
+  ],
+  slt: [['arith', 'alu'], al((p, q) => +(p < q))],
+  beq: [['branch', 'br'], bq(true)],
+  bne: [['branch', 'br'], bq(false)],
+  blt: [
+    ['branch', 'br'],
+    (s, x) => {
+      const t = rg(s, x[0]) < rg(s, x[1]);
+      if (t) s.pc = x.tg;
+      return t ? 'branch TAKEN, PC=' + x.tg : 'branch not taken';
+    },
+  ],
+  bge: [
+    ['branch', 'br'],
+    (s, x) => {
+      const t = rg(s, x[0]) >= rg(s, x[1]);
+      if (t) s.pc = x.tg;
+      return t ? 'branch TAKEN, PC=' + x.tg : 'branch not taken';
+    },
+  ],
+  lui: [
+    ['arith', 'alu'],
+    (s, x) => {
+      const v = (Number(x[1]) << 12) | 0;
+      sr(s, x[0], v);
+      return x[0] + ' = ' + v;
+    },
+  ],
+  auipc: [
+    ['arith', 'alu'],
+    (s, x) => {
+      const v = ((s.pc - 1) * 4 + (Number(x[1]) << 12)) | 0;
+      sr(s, x[0], v);
+      return x[0] + ' = ' + v;
+    },
+  ],
+});
+const sf = (s, v) => {
+  s.f = { ...s.f, z: (v | 0) === 0, s: (v | 0) < 0 };
+  return s.f;
+};
+const x86Flags = (s, a, b, op) => {
+  a = a | 0;
+  b = b | 0;
+  const r = op === 'add' ? (a + b) | 0 : (a - b) | 0;
+  sf(s, r);
+  s.f.o = op === 'add' ? (~(a ^ b) & (a ^ r)) < 0 : ((a ^ b) & (a ^ r)) < 0;
+  s.f.c = op === 'add' ? (a >>> 0) + (b >>> 0) > 0xffffffff : a >>> 0 < b >>> 0;
+  return r;
+};
+const xv = (s, a) => (/\[/.test(a) ? mem(s, a) : /^-?\d+$/.test(a) ? +a : rg(s, a));
+const xk = (x) => (/\[/.test(x[1] || '') ? ['arith', 'alum'] : ['arith', 'alu']);
+const xo = (op) => [
+  xk,
+  (s, x) => {
+    const a = rg(s, x[0]),
+      b = xv(s, x[1]),
+      v = x86Flags(s, a, b, op);
+    sr(s, x[0], v);
+    return x[0] + ' = ' + v;
+  },
+];
+const jc = (f) => [
+  ['branch', 'br'],
+  (s, x) => {
+    const t = f(s.f);
+    if (t) s.pc = x.tg;
+    return t ? 'jump TAKEN, PC=' + x.tg : 'jump not taken';
+  },
+];
+const X86 = {
+  mov: [
+    (x) => (/^\[/.test(x[0]) ? ['store', 'st'] : /\[/.test(x[1]) ? ['load', 'ld'] : ['move', 'alu']),
+    (s, x) => {
+      if (x[0][0] == '[') {
+        mem(s, x[0], rg(s, x[1]));
+        return 'MEM ← ' + rg(s, x[1]);
+      }
+      const v = xv(s, x[1]);
+      sr(s, x[0], v);
+      return x[0] + ' ← ' + v;
+    },
+  ],
+  add: xo('add'),
+  sub: xo('sub'),
+  cmp: [
+    xk,
+    (s, x) => {
+      x86Flags(s, rg(s, x[0]), xv(s, x[1]), 'sub');
+      return 'ZF=' + +s.f.z + ' SF=' + +s.f.s + ' OF=' + +s.f.o + ' CF=' + +s.f.c;
+    },
+  ],
+  neg: [
+    ['arith', 'alu'],
+    (s, x) => {
+      const a = rg(s, x[0]),
+        v = x86Flags(s, 0, a, 'sub');
+      sr(s, x[0], v);
+      return x[0] + ' = ' + v;
+    },
+  ],
+  dec: [
+    ['arith', 'alu'],
+    (s, x) => {
+      const a = rg(s, x[0]),
+        oldCF = s.f.c,
+        v = x86Flags(s, a, 1, 'sub');
+      s.f.c = oldCF;
+      sr(s, x[0], v);
+      return x[0] + ' = ' + v;
+    },
+  ],
+  jnz: jc((f) => !f.z),
+  jge: jc((f) => f.s === f.o),
+  jmp: jc(() => true),
+};
+const sqAddr = (s, n) => {
+  const m = String(n).match(/^@(\d+)$/);
+  if (!m) return hasOwn(NAMES, n) ? NAMES[n] : +n;
+  const pointer = +m[1];
+  s.accesses.push({ type: 'read', address: pointer * 4, cell: pointer, indirectPointer: true, value: s.m[pointer] | 0 });
+  s.c.rd++;
+  return s.m[pointer];
+};
+const SQ = {
+  subleq: [
+    ['sub+branch', 'sq'],
+    (s, x) => {
+      const a = sqAddr(s, x[0]),
+        b = sqAddr(s, x[1]);
+      if (a < 0 || a >= s.m.length || b < 0 || b >= s.m.length)
+        throw Error('SUBLEQ effective address out of range');
+      s.t.add(a);
+      s.t.add(b);
+      s.c.rd += 2;
+      s.c.wr++;
+      const va = s.m[a],
+        vb = s.m[b],
+        r = (vb - va) | 0;
+      s.accesses.push(
+        { type: 'read', address: a * 4, cell: a, value: va | 0 },
+        { type: 'read', address: b * 4, cell: b, value: vb | 0 },
+        { type: 'write', address: b * 4, cell: b, value: r }
+      );
+      s.m[b] = r;
+      const t = r <= 0;
+      if (t) s.pc = x.tg;
+      return (
+        `MEM[${x[1]}] = ${vb} − ${va} = ${r}; ` + (t ? '≤ 0, taken, PC=' + x.tg : '> 0, not taken, next')
+      );
+    },
+  ],
+};
+const MODELS = {
+  sq: {
+    name: 'OISC / SUBLEQ',
+    col: '#3730A3',
+    ops: SQ,
+    sz: () => 12,
+    pw: 0.25,
+    hrs: 80,
+    cyc: { sq: 5 },
+    ver: 'Teaching definition: 3-word instruction, instruction-indexed PC',
+    rep: '1 operation (SUBLEQ)',
+    org: 'Memory, PC, subtractor + sign check. No registers.',
+    st: 'Memory words only; PC is an instruction index',
+    fmt: '[A][B][C], three 32-bit words (12 bytes) – a chosen encoding',
+    simp: 'Separate program store (Harvard-style); halts when PC leaves the program.',
+  },
+  mips: {
+    name: 'MIPS32 (teaching subset)',
+    col: '#7C3AED',
+    ops: rop('addu', 'subu', 'addiu'),
+    sz: () => 4,
+    pw: 0.45,
+    hrs: 160,
+    cyc: { ld: 2, st: 2, alu: 1, br: 1 },
+    ver: 'MIPS32 Architecture for Programmers Vol. I/II (S2, S3); 8-op subset',
+    rep: 'Revision-dependent; no single count stated',
+    org: 'Register file + ALU, explicit load/store, fixed 32-bit instructions.',
+    st: '32 GPRs ($zero fixed at 0), PC',
+    fmt: 'R: op rs rt rd shamt funct · I: op rs rt imm16 · J: op target26',
+    simp: 'Branch delay slots abstracted; no pseudo-instructions; targets are instruction indices.',
+  },
+  rv: {
+    name: 'RISC-V RV32I (teaching subset)',
+    col: '#A855F7',
+    ops: rop('add', 'sub', 'addi'),
+    sz: () => 4,
+    pw: 0.4,
+    hrs: 140,
+    cyc: { ld: 2, st: 2, alu: 1, br: 1 },
+    ver: 'RISC-V Unprivileged ISA, document v20260120; RV32I base v2.1 (S1); teaching subset',
+    rep: '40 base instructions (documented)',
+    org: 'Register file + ALU, load/store, fixed 32-bit instructions.',
+    st: 'x0–x31 (x0 fixed at 0), PC',
+    fmt: 'R, I, S, B, U, J formats; opcode in bits 6:0',
+    simp: 'No CSR/system/fence; no misaligned access; targets are instruction indices.',
+  },
+  x86: {
+    name: 'x86-64 (simplified subset)',
+    col: '#64748B',
+    ops: X86,
+    sz: (x, o) =>
+      /^-?\d+$/.test(x[1] || '') ? (o == 'mov' ? 5 : 3) : 2 + (/\+[1-9]\d*\]/.test(x.join()) ? 1 : 0),
+    pw: 0.8,
+    hrs: 320,
+    cyc: { ld: 3, st: 3, alu: 1, alum: 4, br: 2 },
+    ver: 'Intel 64 SDM (S4); 32-bit operand forms, [rdi+disp8] addressing',
+    rep: 'Extension-dependent; no single count stated',
+    org: 'Few registers, memory operands in ALU instructions, variable-length encoding (1–15 bytes in full ISA).',
+    st: 'EAX, ECX, EDX, RDI, flags ZF/SF/OF/CF, simplified instruction-indexed PC',
+    fmt: '[prefix][opcode][ModRM][disp][imm]; displayed sizes are illustrative estimates',
+    simp: '32-bit register arithmetic and ZF/SF/OF/CF flags modeled; no stack, calls, SIMD or system instructions. Code sizes are estimates unless verified.',
+  },
+};
+const asm = (M, src) => {
+  if (!Array.isArray(src)) throw Error('Program must be an array of lines');
+  const L = Object.create(null),
+    raw = [];
+  src.forEach((line, j) => {
+    let t = String(line)
+      .replace(/(?:#|;|\/\/).*$/, '')
+      .trim();
+    if (!t) return;
+    while (true) {
+      const m = t.match(/^([A-Za-z_]\w*):\s*(.*)$/);
+      if (!m) break;
+      if (hasOwn(L, m[1])) throw Error('Line ' + (j + 1) + ': duplicate label ' + m[1]);
+      L[m[1]] = raw.length;
+      t = m[2].trim();
+      if (!t) break;
+    }
+    if (t) raw.push({ t, line: j + 1 });
+  });
+  if (!raw.length) throw Error('Program is empty');
+  if (raw.length > 2000) throw Error('Program too long');
+  const arch = Object.entries(MODELS).find(([_, v]) => v === M)[0];
+  const specs = {
+    sq: { subleq: 3 },
+    mips: { lw: 2, sw: 2, addu: 3, subu: 3, addiu: 3, slt: 3, beq: 3, bne: 3 },
+    rv: { lw: 2, sw: 2, add: 3, sub: 3, addi: 3, slt: 3, beq: 3, bne: 3, blt: 3, bge: 3, lui: 2, auipc: 2 },
+    x86: { mov: 2, add: 2, sub: 2, cmp: 2, neg: 1, dec: 1, jnz: 1, jge: 1, jmp: 1 },
+  }[arch];
+  const isReg = (n) => REGISTER_SETS[arch]?.has(nr(n));
+  const reg = (n, line) => {
+    if (!isReg(n)) throw Error('Line ' + line + ': invalid ' + arch + ' register ' + n);
+  };
+  const imm = (n, line) => {
+    if (!/^-?\d+$/.test(n) || !Number.isSafeInteger(+n))
+      throw Error('Line ' + line + ': invalid integer ' + n);
+    return +n;
+  };
+  return raw.map(({ t, line }, i) => {
+    const m = t.match(/^([A-Za-z_]\w*)\s*(.*)$/);
+    if (!m) throw Error('Line ' + line + ': malformed instruction');
+    const op = m[1].toLowerCase(),
+      rest = m[2].trim(),
+      x = rest ? rest.split(',').map((v) => v.trim()) : [];
+    if (!hasOwn(specs, op)) throw Error('Line ' + line + ': unknown opcode ' + op);
+    if (x.length !== specs[op] || x.some((v) => !v))
+      throw Error('Line ' + line + ': ' + op + ' requires ' + specs[op] + ' operand(s)');
+    if (arch === 'sq') {
+      for (const n of x.slice(0, 2)) {
+        const indirect = n.match(/^@(\d+)$/);
+        const a = indirect ? +indirect[1] : hasOwn(NAMES, n) ? NAMES[n] : imm(n, line);
+        if (a < 0 || a >= 16) throw Error('Line ' + line + ': SUBLEQ address out of range ' + n);
+      }
+      x.tg = x[2] === 'n' ? i + 1 : hasOwn(L, x[2]) ? L[x[2]] : imm(x[2], line);
+      if (x.tg < 0 || x.tg > 2000) throw Error('Line ' + line + ': invalid SUBLEQ target');
+    } else if (arch === 'x86') {
+      const branch = ['jnz', 'jge', 'jmp'].includes(op);
+      if (branch) {
+        if (!hasOwn(L, x[0])) throw Error('Line ' + line + ': undefined branch label ' + x[0]);
+        x.tg = L[x[0]];
+      } else {
+        const check = (n) => {
+          if (/^\[/.test(n)) {
+            const [r, off] = ea(n);
+            reg(r, line);
+            if (off % 4) throw Error('Line ' + line + ': unaligned displacement');
+          } else if (!/^-?\d+$/.test(n)) reg(n, line);
+          else {
+            const v = imm(n, line);
+            if (v < -2147483648 || v > 2147483647)
+              throw Error('Line ' + line + ': 32-bit immediate out of range');
+          }
+        };
+        x.forEach(check);
+        if (/^\[/.test(x[0]) && op !== 'mov')
+          throw Error('Line ' + line + ': memory destination not supported');
+        if (op === 'mov' && /^\[/.test(x[0]) && (/^\[/.test(x[1]) || /^-?\d+$/.test(x[1])))
+          throw Error('Line ' + line + ': memory destination requires register source');
+        if (['mov', 'add', 'sub', 'cmp', 'neg', 'dec'].includes(op) && /^-?\d+$/.test(x[0]))
+          throw Error('Line ' + line + ': destination must be a register or supported memory operand');
+      }
+    } else {
+      if (['lw', 'sw'].includes(op)) {
+        reg(x[0], line);
+        const [r, off] = ea(x[1]);
+        reg(r, line);
+        if (off % 4) throw Error('Line ' + line + ': unaligned displacement');
+        if (off < (arch === 'rv' ? -2048 : -32768) || off > (arch === 'rv' ? 2047 : 32767))
+          throw Error(
+            'Line ' + line + ': displacement outside ' + (arch === 'rv' ? '12' : '16') + '-bit range'
+          );
+      } else if (['beq', 'bne', 'blt', 'bge'].includes(op)) {
+        reg(x[0], line);
+        reg(x[1], line);
+        if (!hasOwn(L, x[2])) throw Error('Line ' + line + ': undefined label ' + x[2]);
+        x.tg = L[x[2]];
+        if (arch === 'rv' && ((x.tg - i) * 4 < -4096 || (x.tg - i) * 4 > 4094))
+          throw Error('Line ' + line + ': RV32I branch displacement outside B-type range');
+      } else if (arch === 'rv' && ['lui', 'auipc'].includes(op)) {
+        reg(x[0], line);
+        const v = imm(x[1], line);
+        if (v < 0 || v > 0xfffff)
+          throw Error('Line ' + line + ': U-type immediate outside 20-bit unsigned range');
+      } else {
+        reg(x[0], line);
+        reg(x[1], line);
+        if (['addi', 'addiu'].includes(op)) {
+          const v = imm(x[2], line);
+          if (v < (arch === 'rv' ? -2048 : -32768) || v > (arch === 'rv' ? 2047 : 32767))
+            throw Error(
+              'Line ' + line + ': immediate outside ' + (arch === 'rv' ? '12' : '16') + '-bit signed range'
+            );
+        } else reg(x[2], line);
+      }
+    }
+    const e = M.ops[op];
+    return { t, x, k: Array.isArray(e[0]) ? e[0] : e[0](x), f: e[1], sz: M.sz(x, op), line };
+  });
+};
+
+const mp = (s) => s.split('|'),
+  rvf = (a) =>
+    a.map((l) => l.replace(/\$/g, '').replace(/addiu/, 'addi').replace(/addu/, 'add').replace(/subu/, 'sub'));
+const M0 = {
+  ADD: 'lw $t0,0($a0)|lw $t1,4($a0)|addu $t2,$t0,$t1|sw $t2,12($a0)',
+  COPY: 'lw $t0,0($a0)|sw $t0,12($a0)',
+  NEG: 'lw $t0,0($a0)|subu $t1,$zero,$t0|sw $t1,12($a0)',
+  EXPR: 'lw $t0,0($a0)|lw $t1,4($a0)|lw $t2,8($a0)|addu $t3,$t0,$t1|subu $t3,$t3,$t2|sw $t3,12($a0)',
+  SUMN: 'lw $t0,0($a0)|loop: addu $t1,$t1,$t0|addiu $t0,$t0,-1|bne $t0,$zero,loop|sw $t1,12($a0)',
+  MAX: 'lw $t0,0($a0)|lw $t1,4($a0)|slt $t2,$t0,$t1|beq $t2,$zero,skip|addu $t0,$t1,$zero|skip: sw $t0,12($a0)',
+};
+const X0 = {
+  ADD: 'mov eax,[rdi]|add eax,[rdi+4]|mov [rdi+12],eax',
+  COPY: 'mov eax,[rdi]|mov [rdi+12],eax',
+  NEG: 'mov eax,[rdi]|neg eax|mov [rdi+12],eax',
+  EXPR: 'mov eax,[rdi]|add eax,[rdi+4]|sub eax,[rdi+8]|mov [rdi+12],eax',
+  SUMN: 'mov ecx,[rdi]|loop: add eax,ecx|dec ecx|jnz loop|mov [rdi+12],eax',
+  MAX: 'mov eax,[rdi]|cmp eax,[rdi+4]|jge skip|mov eax,[rdi+4]|skip: mov [rdi+12],eax',
+};
+const S0 = {
+  ADD: 'SUBLEQ A,T,n|SUBLEQ B,T,n|SUBLEQ T,OUT,n',
+  COPY: 'SUBLEQ OUT,OUT,n|SUBLEQ A,T,n|SUBLEQ T,OUT,n',
+  NEG: 'SUBLEQ OUT,OUT,n|SUBLEQ A,OUT,n',
+  EXPR: 'SUBLEQ A,T,n|SUBLEQ B,T,n|SUBLEQ T,OUT,n|SUBLEQ C,OUT,n',
+  SUMN: 'SUBLEQ N,T,n|SUBLEQ ONE,N,3|SUBLEQ Z,Z,0|SUBLEQ T,OUT,n',
+  MAX: 'SUBLEQ OUT,OUT,n|SUBLEQ A,T,n|SUBLEQ T,OUT,n|SUBLEQ B,D,n|SUBLEQ T,D,6|SUBLEQ Z,Z,9|SUBLEQ OUT,OUT,n|SUBLEQ B,E,n|SUBLEQ E,OUT,n',
+};
+M0.ARR =
+  'lw $t0,0($a0)|addiu $t3,$zero,40|loop: lw $t2,0($t3)|addu $t1,$t1,$t2|addiu $t3,$t3,4|addiu $t0,$t0,-1|bne $t0,$zero,loop|sw $t1,12($a0)';
+X0.ARR = 'mov ecx,[rdi]|mov edx,40|loop: add eax,[rdx]|add edx,4|dec ecx|jnz loop|mov [rdi+12],eax';
+S0.ARR = 'SUBLEQ 10,T,n|SUBLEQ 11,T,n|SUBLEQ 12,T,n|SUBLEQ 13,T,n|SUBLEQ T,OUT,n';
+M0.ARRU =
+  'lw $t0,40($a0)|lw $t1,44($a0)|addu $t0,$t0,$t1|lw $t1,48($a0)|addu $t0,$t0,$t1|lw $t1,52($a0)|addu $t0,$t0,$t1|sw $t0,12($a0)';
+X0.ARRU = 'mov eax,[rdi+40]|add eax,[rdi+44]|add eax,[rdi+48]|add eax,[rdi+52]|mov [rdi+12],eax';
+const RV0 = {
+  ADD: 'lw t0,0(a0)|lw t1,4(a0)|add t2,t0,t1|sw t2,12(a0)',
+  COPY: 'lw t0,0(a0)|sw t0,12(a0)',
+  NEG: 'lw t0,0(a0)|sub t1,zero,t0|sw t1,12(a0)',
+  EXPR: 'lw t0,0(a0)|lw t1,4(a0)|lw t2,8(a0)|add t3,t0,t1|sub t3,t3,t2|sw t3,12(a0)',
+  SUMN: 'lw t0,0(a0)|loop: add t1,t1,t0|addi t0,t0,-1|bne t0,zero,loop|sw t1,12(a0)',
+  MAX: 'lw t0,0(a0)|lw t1,4(a0)|blt t0,t1,replace|sw t0,12(a0)|beq zero,zero,done|replace: sw t1,12(a0)|done: addi zero,zero,0',
+  ARR: 'auipc t3,0|addi t3,t3,40|lw t0,0(a0)|loop: lw t2,0(t3)|add t1,t1,t2|addi t3,t3,4|addi t0,t0,-1|bne t0,zero,loop|sw t1,12(a0)',
+};
+RV0.ARRU =
+  'lw t0,40(a0)|lw t1,44(a0)|add t0,t0,t1|lw t1,48(a0)|add t0,t0,t1|lw t1,52(a0)|add t0,t0,t1|sw t0,12(a0)';
+const CONST = {
+  sq: 'SUBLEQ A,T,n|SUBLEQ T,OUT,n',
+  mips: 'addiu $t0,$zero,2047|addiu $t0,$t0,1|sw $t0,12($a0)',
+  rv: 'lui t0,1|addi t0,t0,-2048|sw t0,12(a0)',
+  x86: 'mov eax,2047|add eax,1|mov [rdi+12],eax',
+};
+const FIB = {
+  mips: 'lw $t0,0($a0)|addiu $t1,$zero,0|addiu $t2,$zero,1|addiu $t3,$zero,0|loop: slt $t4,$t3,$t0|beq $t4,$zero,done|addu $t4,$t1,$t2|addu $t1,$t2,$zero|addu $t2,$t4,$zero|addiu $t3,$t3,1|beq $zero,$zero,loop|done: sw $t1,12($a0)',
+  rv: 'lw t0,0(a0)|addi t1,zero,0|addi t2,zero,1|addi t3,zero,0|loop: bge t3,t0,done|add t4,t1,t2|add t1,t2,zero|add t2,t4,zero|addi t3,t3,1|beq zero,zero,loop|done: sw t1,12(a0)',
+  x86: 'mov ecx,[rdi]|mov eax,0|mov ebx,1|mov edx,0|loop: cmp edx,ecx|jge done|mov esi,eax|add esi,ebx|mov eax,ebx|mov ebx,esi|add edx,1|jmp loop|done: mov [rdi+12],eax',
+  sq: 'loop: SUBLEQ T,T,n|SUBLEQ 11,T,n|SUBLEQ 12,12,n|SUBLEQ T,12,n|SUBLEQ Z,12,done|SUBLEQ 12,12,n|SUBLEQ ONE,11,n|SUBLEQ T,T,n|SUBLEQ 9,T,n|SUBLEQ 10,T,n|SUBLEQ T,13,n|SUBLEQ 12,12,n|SUBLEQ 10,12,n|SUBLEQ 9,9,n|SUBLEQ 12,9,n|SUBLEQ 12,12,n|SUBLEQ 10,10,n|SUBLEQ 13,12,n|SUBLEQ 12,10,n|SUBLEQ 12,12,n|SUBLEQ 13,13,n|SUBLEQ Z,Z,loop|done: SUBLEQ T,T,n|SUBLEQ 9,T,n|SUBLEQ T,OUT,n',
+};
+const MAXARR = {
+  mips: 'lw $t0,40($a0)|addiu $t3,$zero,44|addiu $t4,$zero,3|loop: lw $t1,0($t3)|slt $t2,$t0,$t1|beq $t2,$zero,keep|addu $t0,$t1,$zero|keep: addiu $t3,$t3,4|addiu $t4,$t4,-1|bne $t4,$zero,loop|sw $t0,12($a0)',
+  rv: 'lw t0,40(a0)|addi t3,zero,44|addi t4,zero,3|loop: lw t1,0(t3)|bge t0,t1,keep|add t0,t1,zero|keep: addi t3,t3,4|addi t4,t4,-1|bne t4,zero,loop|sw t0,12(a0)',
+  x86: 'mov eax,[rdi+40]|mov edx,44|mov ecx,3|loop: mov ebx,[rdx]|cmp eax,ebx|jge keep|mov eax,ebx|keep: add edx,4|dec ecx|jnz loop|mov [rdi+12],eax',
+  sq: 'SUBLEQ OUT,OUT,n|SUBLEQ 10,T,n|SUBLEQ T,OUT,n|SUBLEQ D,D,n|SUBLEQ T,T,n|SUBLEQ 11,T,n|SUBLEQ T,D,n|SUBLEQ OUT,D,keep1|SUBLEQ T,T,n|SUBLEQ D,T,n|SUBLEQ T,OUT,n|keep1: SUBLEQ D,D,n|SUBLEQ T,T,n|SUBLEQ 12,T,n|SUBLEQ T,D,n|SUBLEQ OUT,D,keep2|SUBLEQ T,T,n|SUBLEQ D,T,n|SUBLEQ T,OUT,n|keep2: SUBLEQ D,D,n|SUBLEQ T,T,n|SUBLEQ 13,T,n|SUBLEQ T,D,n|SUBLEQ OUT,D,keep3|SUBLEQ T,T,n|SUBLEQ D,T,n|SUBLEQ T,OUT,n|keep3: SUBLEQ Z,Z,n',
+};
+const ARR_LOOP_SQ =
+  'loop: SUBLEQ @14,T,n|SUBLEQ 9,14,n|SUBLEQ ONE,15,done|SUBLEQ Z,Z,loop|done: SUBLEQ T,OUT,n';
+const PROG = {};
+for (const k of Object.keys(S0))
+  PROG[k] = { sq: mp(S0[k]), mips: mp(M0[k]), rv: mp(RV0[k] || rvf(mp(M0[k]))), x86: mp(X0[k]) };
+PROG.ARR = { sq: mp(S0.ARR), mips: mp(M0.ARRU), rv: mp(RV0.ARRU), x86: mp(X0.ARRU) };
+PROG.CONST = { sq: mp(CONST.sq), mips: mp(CONST.mips), rv: mp(CONST.rv), x86: mp(CONST.x86) };
+PROG.FIB = { sq: mp(FIB.sq), mips: mp(FIB.mips), rv: mp(FIB.rv), x86: mp(FIB.x86) };
+PROG.MAXARR = { sq: mp(MAXARR.sq), mips: mp(MAXARR.mips), rv: mp(MAXARR.rv), x86: mp(MAXARR.x86) };
+PROG.ARR_LOOP = { sq: mp(ARR_LOOP_SQ), mips: mp(M0.ARR), rv: mp(RV0.ARR), x86: mp(X0.ARR) };
+const WL = [
+  { id: 'ADD', n: 'Addition', task: 'OUT = A + B', mem: { 0: 7, 1: 5 }, ex: 12, p: 'ADD' },
+  { id: 'COPY', n: 'Copy', task: 'OUT = A', mem: { 0: 9 }, ex: 9, p: 'COPY' },
+  { id: 'NEG', n: 'Negation', task: 'OUT = −A', mem: { 0: 6 }, ex: -6, p: 'NEG' },
+  { id: 'EXPR', n: 'Expression', task: 'OUT = (A + B) − C', mem: { 0: 7, 1: 5, 2: 3 }, ex: 9, p: 'EXPR' },
+  { id: 'SUMN', n: 'Loop: sum 1..N', task: 'OUT = 1+2+…+N, N=5', mem: { 0: 5 }, ex: 15, p: 'SUMN', opt: 1 },
+  {
+    id: 'MAXa',
+    n: 'Condition: max, A≥B',
+    task: 'OUT = max(A,B), A=7,B=5 (branch skips)',
+    mem: { 0: 7, 1: 5 },
+    ex: 7,
+    p: 'MAX',
+    opt: 1,
+  },
+  {
+    id: 'MAXb',
+    n: 'Condition: max, B>A',
+    task: 'OUT = max(A,B), A=3,B=8 (branch falls through)',
+    mem: { 0: 3, 1: 8 },
+    ex: 8,
+    p: 'MAX',
+    opt: 1,
+  },
+  {
+    id: 'ARR',
+    n: 'Array sum: unrolled baseline',
+    task: 'OUT = 3+1+4+2 (array cells 10-13; all four programs unrolled)',
+    mem: { 0: 4, 10: 3, 11: 1, 12: 4, 13: 2 },
+    ex: 10,
+    p: 'ARR',
+    opt: 1,
+  },
+  {
+    id: 'ARR_LOOP',
+    n: 'Array sum: looped (SUBLEQ indirect extension)',
+    task: 'OUT = 3+1+4+2 using a loop; SUBLEQ uses a declared indirect-address extension',
+    mem: { 0: 4, 9: -1, 10: 3, 11: 1, 12: 4, 13: 2, 14: 10, 15: 4 },
+    ex: 10,
+    p: 'ARR_LOOP',
+    opt: 1,
+  },
+  {
+    id: 'CONST',
+    n: 'RV constant construction',
+    task: 'OUT = 2048 (RV32I LUI + ADDI)',
+    mem: { 0: 2048 },
+    ex: 2048,
+    p: 'CONST',
+    opt: 1,
+  },
+  {
+    id: 'FIB',
+    n: 'Fibonacci',
+    task: 'OUT = Fibonacci(7) = 13',
+    mem: { 0: 7, 9: 0, 10: 1, 11: 7, 12: 0, 13: 0 },
+    ex: 13,
+    p: 'FIB',
+    opt: 1,
+  },
+  {
+    id: 'MAXARR',
+    n: 'Array maximum',
+    task: 'OUT = max(3,1,4,2) = 4 (array cells 10-13)',
+    mem: { 0: 0, 10: 3, 11: 1, 12: 4, 13: 2 },
+    ex: 4,
+    p: 'MAXARR',
+    opt: 1,
+  },
+];
+const mk = (id, w, P) => {
+  const m = Array(16).fill(0);
+  m[8] = 1;
+  for (const k in w.mem) m[k] = w.mem[k];
+  return {
+    id,
+    m,
+    m0: m.slice(),
+    r: {},
+    f: { z: false, s: false, o: false, c: false },
+    pc: 0,
+    t: new Set(),
+    accesses: [],
+    c: { dyn: 0, rd: 0, wr: 0, cyc: 0, cat: {}, cls: {} },
+    p: asm(MODELS[id], P || PROG[w.p][id]),
+    tr: [],
+    halt: false,
+    err: '',
+  };
+};
+function snapshotState(s) {
+  return {
+    m: s.m.slice(),
+    r: { ...s.r },
+    f: { ...s.f },
+    pc: s.pc,
+    t: [...s.t],
+    accesses: s.accesses.map((a) => ({ ...a })),
+    c: JSON.parse(JSON.stringify(s.c)),
+    tr: s.tr.map((v) => ({ ...v })),
+    last: s.last ? { ...s.last } : null,
+    halt: s.halt,
+    err: s.err,
+  };
+}
+function restoreState(s, v) {
+  s.m = v.m.slice();
+  s.r = { ...v.r };
+  s.f = { ...v.f };
+  s.pc = v.pc;
+  s.t = new Set(v.t);
+  s.accesses = (v.accesses || []).map((a) => ({ ...a }));
+  s.c = JSON.parse(JSON.stringify(v.c));
+  s.tr = v.tr.map((x) => ({ ...x }));
+  s.last = v.last ? { ...v.last } : null;
+  s.halt = v.halt;
+  s.err = v.err;
+}
+function step(s) {
+  if (s.halt) return;
+  if (s.recordHistory) {
+    if (!s.history) s.history = [];
+    s.history.push(snapshotState(s));
+  }
+  const i = s.p[s.pc];
+  if (!i) {
+    s.halt = true;
+    return;
+  }
+  const b = s.m.slice(),
+    br = { ...s.r },
+    bf = { ...s.f },
+    pc = s.pc,
+    accessStart = s.accesses.length;
+  s.pc++;
+  try {
+    const n = i.f(s, i.x),
+      [ct, cl] = i.k;
+    s.c.dyn++;
+    s.c.cat[ct] = (s.c.cat[ct] || 0) + 1;
+    s.c.cls[cl] = (s.c.cls[cl] || 0) + 1;
+    const cy = MODELS[s.id].cyc[cl];
+    if (!Number.isFinite(cy) || cy < 0) throw Error('Invalid cycle cost for ' + cl);
+    s.c.cyc += cy;
+    s.last = { k: ct, pc, t: i.t, n };
+    s.tr.push({
+      n: s.c.dyn,
+      pc,
+      nextPC: s.pc,
+      t: i.t,
+      note: n,
+      cy,
+      k: ct,
+      ch: s.m.map((v, j) => (v !== b[j] ? j : -1)).filter((j) => j >= 0),
+      registersBefore: br,
+      registersAfter: { ...s.r },
+      flagsBefore: bf,
+      flagsAfter: { ...s.f },
+      memoryReads: s.c.rd,
+      memoryWrites: s.c.wr,
+      accesses: s.accesses.slice(accessStart),
+      memoryBefore: b,
+      memoryAfter: s.m.slice(),
+      branchTaken: ct === 'branch' || ct === 'sub+branch' ? s.pc !== pc + 1 : null,
+    });
+  } catch (e) {
+    s.err = String(e);
+    s.halt = true;
+  }
+  if (s.pc < 0 || s.pc >= s.p.length) s.halt = true;
+  if (s.c.dyn >= LIM && !s.halt) {
+    s.halt = true;
+    s.err = 'execution limit (' + LIM + ') reached';
+  }
+}
+function stepBack(s) {
+  if (!s.history?.length) return false;
+  restoreState(s, s.history.pop());
+  return true;
+}
+const RC = {},
+  RC_LIMIT = 400,
+  run = (id, w) => {
+    const key = JSON.stringify([id, w.id, w.mem, w.ex, w.p]);
+    if (!RC[key] && Object.keys(RC).length >= RC_LIMIT) for (const k of Object.keys(RC)) delete RC[k];
+    return (
+      RC[key] ||
+      (RC[key] = (() => {
+        const s = mk(id, w);
+        while (!s.halt) step(s);
+        return {
+          ...s.c,
+          accesses: s.accesses.map((a) => ({ ...a })),
+          st: s.p.length,
+          size: s.p.reduce((a, i) => a + i.sz, 0),
+          fp: s.t.size,
+          got: s.m[3],
+          ok: s.m[3] == w.ex && !s.err,
+          err: s.err,
+        };
+      })())
+    );
+  };
+const S = {
+  mhz: 100,
+  rate: 40,
+  sel: ['sq', 'mips', 'rv', 'x86'],
+  wls: WL.map((w) => w.id),
+  base: 'rv',
+  foc: 'ADD',
+  met: 'cyc',
+  cache: { cacheSize: 64, blockSize: 16, associativity: 1, policy: 'LRU', writePolicy: 'write-back', writeAllocate: true, hitTime: 1, missPenalty: 20 },
+};
+
+
+
+/* ===== src/encoders.js ===== */
+
+
+/* Verified fixed-width encodings for the implemented MIPS32 and RV32I subsets.
+   Branch targets in the teaching interpreter are instruction indices; these
+   encoders convert them to architecture-defined PC-relative byte offsets. */
+const MIPS_REG = {
+  zero: 0,
+  at: 1,
+  v0: 2,
+  v1: 3,
+  a0: 4,
+  a1: 5,
+  a2: 6,
+  a3: 7,
+  t0: 8,
+  t1: 9,
+  t2: 10,
+  t3: 11,
+  t4: 12,
+  t5: 13,
+  t6: 14,
+  t7: 15,
+  s0: 16,
+  s1: 17,
+  s2: 18,
+  s3: 19,
+  s4: 20,
+  s5: 21,
+  s6: 22,
+  s7: 23,
+  t8: 24,
+  t9: 25,
+  k0: 26,
+  k1: 27,
+  gp: 28,
+  sp: 29,
+  fp: 30,
+  ra: 31,
+};
+const regNum = (id, name) => {
+  const n = nr(name);
+  if (id === 'mips') {
+    if (!hasOwn(MIPS_REG, n)) throw Error('Invalid MIPS register ' + name);
+    return MIPS_REG[n];
+  }
+  if (id === 'rv') {
+    const i = RV_ALIAS[n] ?? (/^x(?:[12]?\d|3[01])$/.test(n) ? Number(n.slice(1)) : NaN);
+    if (!Number.isInteger(i) || i < 0 || i > 31) throw Error('Invalid RV32I register ' + name);
+    return i;
+  }
+  throw Error('No encoding for ' + id);
+};
+const hex32 = (n) => '0x' + (n >>> 0).toString(16).toUpperCase().padStart(8, '0');
+function encodeInstruction(id, ins, pc) {
+  const op = ins.t
+      .trim()
+      .replace(/^[A-Za-z_]\w*:\s*/, '')
+      .split(/\s+/)[0]
+      .toLowerCase(),
+    x = ins.x;
+  if (id === 'sq') {
+    const a = (n) => (hasOwn(NAMES, n) ? NAMES[n] : Number(n));
+    return {
+      hex: [a(x[0]), a(x[1]), x.tg].map(hex32).join(' '),
+      bits: null,
+      kind: 'Teaching 3-word SUBLEQ layout (endianness unspecified)',
+      bytes: 12,
+    };
+  }
+  if (id === 'x86')
+    return {
+      hex: null,
+      bits: null,
+      kind: 'x86 instruction encoding not verified; byte count is an estimate',
+      bytes: ins.sz,
+    };
+  let w = 0;
+  if (id === 'mips') {
+    const r = (n) => regNum(id, n);
+    if (['addu', 'subu', 'slt'].includes(op)) {
+      const funct = { addu: 0x21, subu: 0x23, slt: 0x2a }[op];
+      w = (r(x[1]) << 21) | (r(x[2]) << 16) | (r(x[0]) << 11) | funct;
+    } else if (['lw', 'sw'].includes(op)) {
+      const [base, off] = ea(x[1]);
+      w = ({ lw: 0x23, sw: 0x2b }[op] << 26) | (r(base) << 21) | (r(x[0]) << 16) | (off & 0xffff);
+    } else if (op === 'addiu') w = (0x09 << 26) | (r(x[1]) << 21) | (r(x[0]) << 16) | (Number(x[2]) & 0xffff);
+    else if (op === 'beq' || op === 'bne') {
+      const delta = x.tg - (pc + 1);
+      if (delta < -32768 || delta > 32767) throw Error('MIPS branch offset outside 16-bit range');
+      w = ((op === 'beq' ? 0x04 : 0x05) << 26) | (r(x[0]) << 21) | (r(x[1]) << 16) | (delta & 0xffff);
+    } else throw Error('No MIPS encoder for ' + op);
+  } else if (id === 'rv') {
+    const r = (n) => regNum(id, n);
+    if (['add', 'sub', 'slt'].includes(op)) {
+      const f3 = op === 'slt' ? 2 : 0,
+        f7 = op === 'sub' ? 0x20 : 0;
+      w = (f7 << 25) | (r(x[2]) << 20) | (r(x[1]) << 15) | (f3 << 12) | (r(x[0]) << 7) | 0x33;
+    } else if (op === 'addi') {
+      const v = Number(x[2]);
+      w = ((v & 0xfff) << 20) | (r(x[1]) << 15) | (r(x[0]) << 7) | 0x13;
+    } else if (op === 'lw') {
+      const [base, off] = ea(x[1]);
+      if (off < -2048 || off > 2047) throw Error('RV32I load offset outside 12-bit range');
+      w = ((off & 0xfff) << 20) | (r(base) << 15) | (2 << 12) | (r(x[0]) << 7) | 0x03;
+    } else if (op === 'sw') {
+      const [base, off] = ea(x[1]);
+      if (off < -2048 || off > 2047) throw Error('RV32I store offset outside 12-bit range');
+      const imm = off & 0xfff;
+      w = ((imm >>> 5) << 25) | (r(x[0]) << 20) | (r(base) << 15) | (2 << 12) | ((imm & 31) << 7) | 0x23;
+    } else if (op === 'lui' || op === 'auipc') {
+      w = ((Number(x[1]) & 0xfffff) << 12) | (r(x[0]) << 7) | (op === 'lui' ? 0x37 : 0x17);
+    } else if (['beq', 'bne', 'blt', 'bge'].includes(op)) {
+      const d = (x.tg - pc) * 4;
+      if (d < -4096 || d > 4094 || d % 2) throw Error('RV32I branch displacement outside B-type range');
+      const imm = d & 0x1fff,
+        f3 = { beq: 0, bne: 1, blt: 4, bge: 5 }[op];
+      w =
+        (((imm >>> 12) & 1) << 31) |
+        (((imm >>> 5) & 63) << 25) |
+        (r(x[1]) << 20) |
+        (r(x[0]) << 15) |
+        (f3 << 12) |
+        (((imm >>> 1) & 15) << 8) |
+        (((imm >>> 11) & 1) << 7) |
+        0x63;
+    } else throw Error('No RV32I encoder for ' + op);
+  } else throw Error('Unsupported architecture ' + id);
+  return {
+    hex: hex32(w),
+    bits: (w >>> 0).toString(2).padStart(32, '0'),
+    kind: id === 'rv' ? 'RV32I 32-bit encoding' : 'MIPS32 32-bit encoding',
+    bytes: 4,
+  };
+}
+
+const FIELD_COLORS = {
+  opcode: '#c4b5fd',
+  register: '#93c5fd',
+  funct: '#fcd34d',
+  immediate: '#86efac',
+  misc: '#f9a8d4',
+};
+const field = (label, bits, color) => ({ label, bits: bits.length, value: bits, color });
+function encodingFields(id, ins, pc) {
+  const e = encodeInstruction(id, ins, pc);
+  if (!e.bits) return null;
+  const op = ins.t
+      .trim()
+      .replace(/^[A-Za-z_]\w*:\s*/, '')
+      .split(/\s+/)[0]
+      .toLowerCase(),
+    b = e.bits;
+  if (id === 'mips') {
+    const f = ['addu', 'subu', 'slt'].includes(op)
+      ? [
+          ['opcode', b.slice(0, 6), FIELD_COLORS.opcode],
+          ['rs', b.slice(6, 11), FIELD_COLORS.register],
+          ['rt', b.slice(11, 16), FIELD_COLORS.register],
+          ['rd', b.slice(16, 21), FIELD_COLORS.register],
+          ['shamt', b.slice(21, 26), FIELD_COLORS.misc],
+          ['funct', b.slice(26, 32), FIELD_COLORS.funct],
+        ]
+      : [
+          ['opcode', b.slice(0, 6), FIELD_COLORS.opcode],
+          ['rs', b.slice(6, 11), FIELD_COLORS.register],
+          ['rt', b.slice(11, 16), FIELD_COLORS.register],
+          ['immediate', b.slice(16, 32), FIELD_COLORS.immediate],
+        ];
+    return f.map((x) => field(...x));
+  }
+  if (id === 'rv') {
+    let f;
+    if (['add', 'sub', 'slt'].includes(op))
+      f = [
+        ['funct7', b.slice(0, 7), FIELD_COLORS.funct],
+        ['rs2', b.slice(7, 12), FIELD_COLORS.register],
+        ['rs1', b.slice(12, 17), FIELD_COLORS.register],
+        ['funct3', b.slice(17, 20), FIELD_COLORS.funct],
+        ['rd', b.slice(20, 25), FIELD_COLORS.register],
+        ['opcode', b.slice(25, 32), FIELD_COLORS.opcode],
+      ];
+    else if (op === 'sw')
+      f = [
+        ['imm[11:5]', b.slice(0, 7), FIELD_COLORS.immediate],
+        ['rs2', b.slice(7, 12), FIELD_COLORS.register],
+        ['rs1', b.slice(12, 17), FIELD_COLORS.register],
+        ['funct3', b.slice(17, 20), FIELD_COLORS.funct],
+        ['imm[4:0]', b.slice(20, 25), FIELD_COLORS.immediate],
+        ['opcode', b.slice(25, 32), FIELD_COLORS.opcode],
+      ];
+    else if (['beq', 'bne', 'blt', 'bge'].includes(op))
+      f = [
+        ['imm[12]', b.slice(0, 1), FIELD_COLORS.immediate],
+        ['imm[10:5]', b.slice(1, 7), FIELD_COLORS.immediate],
+        ['rs2', b.slice(7, 12), FIELD_COLORS.register],
+        ['rs1', b.slice(12, 17), FIELD_COLORS.register],
+        ['funct3', b.slice(17, 20), FIELD_COLORS.funct],
+        ['imm[4:1]', b.slice(20, 24), FIELD_COLORS.immediate],
+        ['imm[11]', b.slice(24, 25), FIELD_COLORS.immediate],
+        ['opcode', b.slice(25, 32), FIELD_COLORS.opcode],
+      ];
+    else if (op === 'lui' || op === 'auipc')
+      f = [
+        ['imm[31:12]', b.slice(0, 20), FIELD_COLORS.immediate],
+        ['rd', b.slice(20, 25), FIELD_COLORS.register],
+        ['opcode', b.slice(25, 32), FIELD_COLORS.opcode],
+      ];
+    else
+      f = [
+        ['imm[11:0]', b.slice(0, 12), FIELD_COLORS.immediate],
+        ['rs1', b.slice(12, 17), FIELD_COLORS.register],
+        ['funct3', b.slice(17, 20), FIELD_COLORS.funct],
+        ['rd', b.slice(20, 25), FIELD_COLORS.register],
+        ['opcode', b.slice(25, 32), FIELD_COLORS.opcode],
+      ];
+    return f.map((x) => field(...x));
+  }
+  return null;
+}
+
+
+/* ===== src/datapath.js ===== */
+
+
+
+/* Instruction semantics for visualisation.
+   describeInstruction() turns one interpreter trace record (engine.js step()) into the
+   values that travel through the datapath: registers read, ALU inputs/output, memory
+   address/data, register written, branch decision and next PC. Every value is read from
+   the trace (registersBefore/After, accesses, memoryBefore/After, branchTaken, nextPC);
+   the ALU result is also recomputed and checked against the interpreter (aluChecked). */
+
+const RV_ABI = Object.fromEntries(Object.entries(RV_ALIAS).map(([k, v]) => [v, k]));
+const MIPS_NAME = Object.fromEntries(Object.entries(MIPS_REG).map(([k, v]) => [v, k]));
+const ABI_PREF = { zero: 1, ra: 1, sp: 1, gp: 1, tp: 1 };
+
+function regKey(arch, name) {
+  const n = String(name).trim().replace(/^\$/, '').toLowerCase();
+  if (arch === 'rv') {
+    if (n in RV_ALIAS) return 'x' + RV_ALIAS[n];
+    if (/^x([12]?\d|3[01])$/.test(n)) return n;
+    throw new Error('Unknown RV32I register ' + name);
+  }
+  if (arch === 'mips') {
+    if (n in MIPS_REG) return n;
+    throw new Error('Unknown MIPS32 register ' + name);
+  }
+  if (arch === 'x86') return n.replace(/^r([a-d]x|di|si)$/, 'e$1');
+  return n;
+}
+/* Friendly name: RV shows "t0 (x5)", MIPS "$t0 ($8)". */
+function regLabel(arch, name) {
+  const k = regKey(arch, name);
+  if (arch === 'rv') {
+    const num = Number(k.slice(1)),
+      abi = RV_ABI[num];
+    return (abi || k) + ' (x' + num + ')';
+  }
+  if (arch === 'mips') return '$' + k + ' ($' + MIPS_REG[k] + ')';
+  return k.toUpperCase();
+}
+const isZero = (arch, k) => (arch === 'rv' && k === 'x0') || (arch === 'mips' && k === 'zero');
+const readReg = (arch, regs, name) => {
+  const k = regKey(arch, name);
+  return isZero(arch, k) ? 0 : regs[k] | 0;
+};
+function parse(text) {
+  const t = String(text)
+    .replace(/^[A-Za-z_]\w*:\s*/, '')
+    .trim();
+  const m = t.match(/^([A-Za-z_]+)\s*(.*)$/);
+  const op = m ? m[1].toLowerCase() : '';
+  const args = m && m[2].trim() ? m[2].split(',').map((x) => x.trim()) : [];
+  return { op, args, text: t };
+}
+const memOperand = (s) => {
+  let m = s.match(/^(-?\d+)\((\$?[A-Za-z]\w*)\)$/);
+  if (m) return { base: m[2], offset: Number(m[1]) };
+  m = s.match(/^\[([A-Za-z]\w*)(?:\+(-?\d+))?\]$/);
+  if (m) return { base: m[1], offset: Number(m[2] || 0) };
+  return null;
+};
+const KIND = {
+  mips: { lw: 'load', sw: 'store', addu: 'alu3', subu: 'alu3', slt: 'alu3', addiu: 'alui', beq: 'branch', bne: 'branch' },
+  rv: {
+    lw: 'load',
+    sw: 'store',
+    add: 'alu3',
+    sub: 'alu3',
+    slt: 'alu3',
+    addi: 'alui',
+    lui: 'upper',
+    auipc: 'upper',
+    beq: 'branch',
+    bne: 'branch',
+    blt: 'branch',
+    bge: 'branch',
+  },
+};
+const ALU_OP = { addu: '+', add: '+', addiu: '+', addi: '+', subu: '−', sub: '−', slt: '<', lui: '+', auipc: '+' };
+const hex = (n, w = 8) => '0x' + (n >>> 0).toString(16).toUpperCase().padStart(w, '0');
+
+function describeInstruction(arch, tr, ins) {
+  const { op, args, text } = parse(tr.t);
+  const before = tr.registersBefore || {},
+    after = tr.registersAfter || {};
+  const d = {
+    arch,
+    op,
+    text,
+    index: tr.pc,
+    nextIndex: tr.nextPC,
+    reads: [],
+    write: null,
+    alu: null,
+    mem: null,
+    branch: null,
+    imm: null,
+    encoding: null,
+    fields: null,
+    flags: null,
+    aluChecked: true,
+  };
+  if (arch === 'mips' || arch === 'rv') {
+    d.pcByte = tr.pc * 4;
+    d.nextPcByte = tr.nextPC * 4;
+    d.kind = KIND[arch][op];
+    if (!d.kind) throw new Error('No datapath description for ' + arch + ' opcode ' + op);
+    if (ins) {
+      try {
+        const e = encodeInstruction(arch, ins, tr.pc);
+        d.encoding = e.hex;
+        d.fields = encodingFields(arch, ins, tr.pc);
+      } catch (e) {
+        d.encoding = null;
+      }
+    }
+    const rd = (name, role) => {
+      const value = readReg(arch, before, name);
+      const r = { name, key: regKey(arch, name), label: regLabel(arch, name), role, value };
+      d.reads.push(r);
+      return r;
+    };
+    const wr = (name, computed) => {
+      const k = regKey(arch, name);
+      const zero = isZero(arch, k);
+      const value = zero ? 0 : after[k] | 0;
+      d.write = {
+        name,
+        key: k,
+        label: regLabel(arch, name),
+        value,
+        old: zero ? 0 : before[k] | 0,
+        discarded: zero,
+        computed: computed | 0,
+      };
+      if (!zero && (computed | 0) !== value) d.aluChecked = false;
+    };
+    const aluOut = (a, b, sym) => (sym === '+' ? (a + b) | 0 : sym === '−' ? (a - b) | 0 : +(a < b));
+    switch (d.kind) {
+      case 'alu3': {
+        const s1 = rd(args[1], arch === 'rv' ? 'rs1' : 'rs'),
+          s2 = rd(args[2], arch === 'rv' ? 'rs2' : 'rt');
+        const sym = ALU_OP[op],
+          result = aluOut(s1.value, s2.value, sym);
+        d.alu = { a: s1.value, b: s2.value, op: sym, result, aFrom: s1.label, bFrom: s2.label };
+        wr(args[0], result);
+        break;
+      }
+      case 'alui': {
+        const s1 = rd(args[1], arch === 'rv' ? 'rs1' : 'rs');
+        d.imm = Number(args[2]);
+        const result = aluOut(s1.value, d.imm, '+');
+        d.alu = { a: s1.value, b: d.imm, op: '+', result, aFrom: s1.label, bFrom: 'immediate' };
+        wr(args[0], result);
+        break;
+      }
+      case 'upper': {
+        d.imm = Number(args[1]);
+        const upper = (d.imm << 12) | 0;
+        const a = op === 'auipc' ? d.pcByte : 0;
+        const result = (a + upper) | 0;
+        d.alu = {
+          a,
+          b: upper,
+          op: '+',
+          result,
+          aFrom: op === 'auipc' ? 'PC' : 'zero (lui)',
+          bFrom: 'imm20 << 12',
+        };
+        wr(args[0], result);
+        break;
+      }
+      case 'load': {
+        const mo = memOperand(args[1]);
+        const base = rd(mo.base, arch === 'rv' ? 'rs1' : 'rs');
+        d.imm = mo.offset;
+        const address = (base.value + mo.offset) | 0;
+        const acc = (tr.accesses || []).find((a) => a.type === 'read');
+        const value = acc && 'value' in acc ? acc.value | 0 : after[regKey(arch, args[0])] | 0;
+        d.alu = { a: base.value, b: mo.offset, op: '+', result: address, aFrom: base.label, bFrom: 'offset' };
+        d.mem = { type: 'read', address, value, cell: address / 4 };
+        if (acc && acc.address !== address) d.aluChecked = false;
+        wr(args[0], value);
+        break;
+      }
+      case 'store': {
+        const mo = memOperand(args[1]);
+        const data = rd(args[0], arch === 'rv' ? 'rs2' : 'rt');
+        const base = rd(mo.base, arch === 'rv' ? 'rs1' : 'rs');
+        d.imm = mo.offset;
+        const address = (base.value + mo.offset) | 0;
+        const acc = (tr.accesses || []).find((a) => a.type === 'write');
+        d.alu = { a: base.value, b: mo.offset, op: '+', result: address, aFrom: base.label, bFrom: 'offset' };
+        d.mem = {
+          type: 'write',
+          address,
+          value: data.value,
+          cell: address / 4,
+          old: tr.memoryBefore ? tr.memoryBefore[address / 4] : undefined,
+        };
+        if (acc && (acc.address !== address || ('value' in acc && acc.value !== data.value))) d.aluChecked = false;
+        break;
+      }
+      case 'branch': {
+        const s1 = rd(args[0], arch === 'rv' ? 'rs1' : 'rs'),
+          s2 = rd(args[1], arch === 'rv' ? 'rs2' : 'rt');
+        const cond = { beq: '=', bne: '≠', blt: '<', bge: '≥' }[op];
+        const test =
+          op === 'beq'
+            ? s1.value === s2.value
+            : op === 'bne'
+              ? s1.value !== s2.value
+              : op === 'blt'
+                ? s1.value < s2.value
+                : s1.value >= s2.value;
+        const taken = tr.branchTaken === true;
+        if (test !== taken) d.aluChecked = false;
+        const targetIndex = ins && Number.isInteger(ins.x?.tg) ? ins.x.tg : taken ? tr.nextPC : null;
+        d.alu = {
+          a: s1.value,
+          b: s2.value,
+          op: arch === 'mips' ? '−' : 'compare',
+          result: arch === 'mips' ? (s1.value - s2.value) | 0 : +test,
+          aFrom: s1.label,
+          bFrom: s2.label,
+        };
+        const offsetBytes = targetIndex == null ? null : arch === 'mips' ? (targetIndex - (tr.pc + 1)) * 4 : (targetIndex - tr.pc) * 4;
+        d.branch = {
+          cond,
+          test,
+          taken,
+          targetIndex,
+          targetByte: targetIndex == null ? null : targetIndex * 4,
+          offsetBytes,
+          fallThroughByte: (tr.pc + 1) * 4,
+        };
+        d.imm = offsetBytes;
+        break;
+      }
+    }
+    if (d.kind !== 'branch' && tr.nextPC !== tr.pc + 1) d.aluChecked = false;
+    d.control = controlSignals(arch, d.kind, op);
+    d.hex = hex;
+    return d;
+  }
+  if (arch === 'sq') {
+    d.kind = 'subleq';
+    d.pcByte = tr.pc;
+    d.nextPcByte = tr.nextPC;
+    const reads = (tr.accesses || []).filter((a) => a.type === 'read' && !a.indirectPointer);
+    const ptr = (tr.accesses || []).filter((a) => a.indirectPointer);
+    const write = (tr.accesses || []).find((a) => a.type === 'write');
+    const ra = reads[0],
+      rb = reads[1];
+    const mb = tr.memoryBefore || [];
+    const va = ra ? mb[ra.cell] | 0 : 0,
+      vb = rb ? mb[rb.cell] | 0 : 0;
+    const result = (vb - va) | 0;
+    const c = ins?.x?.tg;
+    d.subleq = {
+      a: ra?.cell,
+      b: rb?.cell,
+      va,
+      vb,
+      result,
+      c,
+      /* the branch condition; when C is the next instruction a true condition does not change the PC */
+      taken: result <= 0,
+      cIsNext: c === tr.pc + 1,
+      indirect: ptr.map((p) => p.cell),
+    };
+    if (c != null && tr.nextPC !== (result <= 0 ? c : tr.pc + 1)) d.aluChecked = false;
+    d.alu = { a: vb, b: va, op: '−', result, aFrom: 'MEM[B]', bFrom: 'MEM[A]' };
+    d.mem = { type: 'write', address: write?.address, cell: write?.cell, value: result, old: vb };
+    if (tr.memoryAfter && write && (tr.memoryAfter[write.cell] | 0) !== result) d.aluChecked = false;
+    d.branch = { cond: '≤ 0', test: result <= 0, taken: d.subleq.taken, targetIndex: d.subleq.c };
+    return d;
+  }
+  if (arch === 'x86') {
+    d.kind = 'x86';
+    d.pcByte = tr.pc;
+    d.nextPcByte = tr.nextPC;
+    d.flags = { before: tr.flagsBefore, after: tr.flagsAfter };
+    const val = (s) => {
+      if (/^\[/.test(s)) {
+        const mo = memOperand(s);
+        const base = readReg('x86', before, mo.base);
+        const address = (base + mo.offset) | 0;
+        const acc = (tr.accesses || []).find((a) => a.type === 'read' && a.address === address);
+        return { label: s, value: acc && 'value' in acc ? acc.value : (tr.memoryBefore || [])[address / 4] | 0, address, base, offset: mo.offset, mem: true };
+      }
+      if (/^-?\d+$/.test(s)) return { label: 'immediate', value: Number(s) };
+      const k = regKey('x86', s);
+      return { label: k.toUpperCase(), value: before[k] | 0, reg: k };
+    };
+    if (['jnz', 'jge', 'jmp'].includes(op)) {
+      const cond = { jnz: 'ZF = 0', jge: 'SF = OF', jmp: 'always' }[op];
+      d.branch = { cond, taken: tr.branchTaken === true, targetIndex: ins?.x?.tg };
+      return d;
+    }
+    if (op === 'mov' && /^\[/.test(args[0])) {
+      const src = val(args[1]);
+      const mo = memOperand(args[0]);
+      const base = readReg('x86', before, mo.base);
+      const address = (base + mo.offset) | 0;
+      d.reads.push({ label: src.label, value: src.value });
+      d.alu = { a: base, b: mo.offset, op: '+', result: address, aFrom: mo.base.toUpperCase(), bFrom: 'displacement', agu: true };
+      d.mem = { type: 'write', address, value: src.value, cell: address / 4 };
+      return d;
+    }
+    const dst = regKey('x86', args[0]);
+    const writeVal = after[dst] | 0;
+    if (op === 'mov') {
+      const src = val(args[1]);
+      d.reads.push({ label: src.label, value: src.value });
+      if (src.mem) {
+        d.mem = { type: 'read', address: src.address, value: src.value, cell: src.address / 4 };
+        d.alu = { a: src.base, b: src.offset, op: '+', result: src.address, aFrom: 'base', bFrom: 'displacement', agu: true };
+      }
+      d.write = { key: dst, label: dst.toUpperCase(), value: writeVal, old: before[dst] | 0, computed: src.value };
+      if ((src.value | 0) !== writeVal) d.aluChecked = false;
+      return d;
+    }
+    const a = before[dst] | 0;
+    const b = op === 'neg' ? a : op === 'dec' ? 1 : val(args[1]).value;
+    const bInfo = op === 'neg' || op === 'dec' ? null : val(args[1]);
+    if (bInfo?.mem) d.mem = { type: 'read', address: bInfo.address, value: bInfo.value, cell: bInfo.address / 4 };
+    d.reads.push({ label: dst.toUpperCase(), value: a });
+    if (bInfo) d.reads.push({ label: bInfo.label, value: bInfo.value });
+    const result = op === 'add' ? (a + b) | 0 : op === 'neg' ? -a | 0 : (a - b) | 0;
+    d.alu = {
+      a: op === 'neg' ? 0 : a,
+      b: op === 'neg' ? a : b,
+      op: op === 'add' ? '+' : '−',
+      result,
+      aFrom: op === 'neg' ? '0' : dst.toUpperCase(),
+      bFrom: op === 'neg' ? dst.toUpperCase() : op === 'dec' ? 'constant 1' : bInfo.label,
+    };
+    if (op !== 'cmp') {
+      d.write = { key: dst, label: dst.toUpperCase(), value: writeVal, old: a, computed: result };
+      if (result !== writeVal) d.aluChecked = false;
+    }
+    return d;
+  }
+  throw new Error('No datapath description for architecture ' + arch);
+}
+
+/* Main control signals of the textbook single-issue datapaths (Patterson & Hennessy for MIPS;
+   the analogous RISC-V organisation). X = don't care. */
+function controlSignals(arch, kind, op) {
+  if (arch === 'mips') {
+    const t = {
+      alu3: { RegDst: 1, ALUSrc: 0, MemtoReg: 0, RegWrite: 1, MemRead: 0, MemWrite: 0, Branch: 0, ALUOp: '10' },
+      alui: { RegDst: 0, ALUSrc: 1, MemtoReg: 0, RegWrite: 1, MemRead: 0, MemWrite: 0, Branch: 0, ALUOp: '00' },
+      load: { RegDst: 0, ALUSrc: 1, MemtoReg: 1, RegWrite: 1, MemRead: 1, MemWrite: 0, Branch: 0, ALUOp: '00' },
+      store: { RegDst: 'X', ALUSrc: 1, MemtoReg: 'X', RegWrite: 0, MemRead: 0, MemWrite: 1, Branch: 0, ALUOp: '00' },
+      branch: { RegDst: 'X', ALUSrc: 0, MemtoReg: 'X', RegWrite: 0, MemRead: 0, MemWrite: 0, Branch: 1, ALUOp: '01' },
+    }[kind];
+    return { ...t, ...(op === 'bne' ? { BranchType: 'not-equal' } : {}) };
+  }
+  if (arch === 'rv') {
+    const t = {
+      alu3: { RegWrite: 1, ImmSel: '–', ALUSrcA: 'rs1', ALUSrcB: 'rs2', MemRead: 0, MemWrite: 0, ResultSrc: 'ALU', Branch: 0 },
+      alui: { RegWrite: 1, ImmSel: 'I', ALUSrcA: 'rs1', ALUSrcB: 'imm', MemRead: 0, MemWrite: 0, ResultSrc: 'ALU', Branch: 0 },
+      load: { RegWrite: 1, ImmSel: 'I', ALUSrcA: 'rs1', ALUSrcB: 'imm', MemRead: 1, MemWrite: 0, ResultSrc: 'Mem', Branch: 0 },
+      store: { RegWrite: 0, ImmSel: 'S', ALUSrcA: 'rs1', ALUSrcB: 'imm', MemRead: 0, MemWrite: 1, ResultSrc: 'X', Branch: 0 },
+      branch: { RegWrite: 0, ImmSel: 'B', ALUSrcA: 'rs1', ALUSrcB: 'rs2', MemRead: 0, MemWrite: 0, ResultSrc: 'X', Branch: 1 },
+      upper: { RegWrite: 1, ImmSel: 'U', ALUSrcA: op === 'auipc' ? 'PC' : 'zero', ALUSrcB: 'imm', MemRead: 0, MemWrite: 0, ResultSrc: 'ALU', Branch: 0 },
+    }[kind];
+    return t;
+  }
+  return null;
+}
+
+/* ---------- Datapath layouts (SVG coordinates) ---------- */
+const N = (x, y, w, h, label, extra = {}) => ({ x, y, w, h, label, ...extra });
+const DATAPATH_LAYOUTS = {
+  mips: {
+    title: 'MIPS32 datapath (textbook organisation, Patterson & Hennessy style)',
+    note: 'Separate instruction and data memories, as in the simulator. Values on the wires come from the executed instruction; the structure is the classic teaching datapath, not a gate-level model of a specific chip. Branch delay slots are abstracted, as everywhere in this lab.',
+    nodes: {
+      pc: N(20, 190, 50, 70, 'PC'),
+      add4: N(100, 70, 74, 44, 'Add +4'),
+      imem: N(100, 170, 112, 110, 'Instruction', { sub: 'memory' }),
+      ctrl: N(250, 40, 150, 44, 'Control unit'),
+      regdst: N(244, 240, 22, 50, 'RegDst', { mux: true }),
+      regs: N(290, 160, 150, 140, 'Register file'),
+      sext: N(300, 330, 130, 40, 'Sign-extend 16→32'),
+      alusrc: N(480, 225, 22, 56, 'ALUSrc', { mux: true }),
+      alu: N(530, 175, 90, 110, 'ALU'),
+      bradd: N(530, 70, 116, 44, 'Branch adder', { sub: 'PC+4 + (imm<<2)' }),
+      pcmux: N(690, 60, 22, 64, 'PCSrc', { mux: true }),
+      dmem: N(690, 175, 120, 110, 'Data memory'),
+      wbmux: N(850, 200, 22, 64, 'MemtoReg', { mux: true }),
+    },
+    wires: {
+      pc_imem: ['M70 225 H100', 72, 218],
+      pc_add4: ['M84 225 V92 H100', 88, 150],
+      add4_pcmux: ['M174 92 H186 V30 H668 V80 H690', 420, 26],
+      add4_bradd: ['M186 92 V122 H510 V100 H530', 300, 118],
+      imem_ctrl: ['M212 186 H228 V62 H250', 214, 130],
+      imem_rs: ['M212 196 H290', 236, 192],
+      imem_rt: ['M212 222 H232 V250 H244 M232 222 H290', 236, 218],
+      imem_rd: ['M212 268 H244', 214, 264],
+      regdst_regs: ['M266 265 H290', 268, 278],
+      imem_sext: ['M212 276 H226 V350 H300', 230, 346],
+      regs_alu_a: ['M440 195 H530', 446, 190],
+      regs_alusrc: ['M440 245 H480', 444, 240],
+      sext_alusrc: ['M430 350 H470 V270 H480', 436, 366],
+      sext_bradd: ['M430 340 H456 V108 H530', 460, 160],
+      alusrc_alu: ['M502 253 H530', 504, 270],
+      alu_dmem: ['M620 215 H690', 624, 210],
+      alu_pcmux: ['M575 175 V140 H701 V124', 590, 136],
+      bradd_pcmux: ['M646 92 H690', 648, 86],
+      pcmux_pc: ['M712 92 H740 V14 H8 V225 H20', 380, 12],
+      regs_dmem: ['M462 245 V306 H660 V265 H690', 560, 302],
+      dmem_wbmux: ['M810 220 H850', 812, 214],
+      alu_wbmux: ['M620 262 H670 V312 H836 V250 H850', 700, 326],
+      wbmux_regs: ['M872 232 H900 V396 H274 V290 H290', 560, 392],
+    },
+  },
+  rv: {
+    title: 'RV32I datapath (textbook single-issue organisation)',
+    note: 'RISC-V has no RegDst multiplexer (rd is always bits 11:7), an immediate generator for the I/S/B/U formats instead of one sign-extender, and a branch adder that adds the immediate to PC (not PC+4). blt/bge compare registers directly; there are no flags. Values come from the executed instruction; the structure is a teaching datapath, not a gate-level model.',
+    nodes: {
+      pc: N(20, 190, 50, 70, 'PC'),
+      add4: N(100, 70, 74, 44, 'Add +4'),
+      imem: N(100, 170, 112, 110, 'Instruction', { sub: 'memory' }),
+      ctrl: N(250, 40, 150, 44, 'Control unit'),
+      regs: N(290, 160, 150, 140, 'Register file'),
+      sext: N(300, 330, 130, 40, 'Immediate generator', { sub: 'I / S / B / U' }),
+      alusrca: N(480, 172, 22, 46, 'ALUSrcA', { mux: true }),
+      alusrc: N(480, 225, 22, 56, 'ALUSrcB', { mux: true }),
+      alu: N(530, 175, 90, 110, 'ALU / compare'),
+      bradd: N(530, 70, 116, 44, 'Branch adder', { sub: 'PC + imm' }),
+      pcmux: N(690, 60, 22, 64, 'PCSrc', { mux: true }),
+      dmem: N(690, 175, 120, 110, 'Data memory'),
+      wbmux: N(850, 200, 22, 64, 'ResultSrc', { mux: true }),
+    },
+    wires: {
+      pc_imem: ['M70 225 H100', 72, 218],
+      pc_add4: ['M84 225 V92 H100', 88, 150],
+      add4_pcmux: ['M174 92 H186 V30 H668 V80 H690', 420, 26],
+      pc_bradd: ['M45 190 V134 H516 V100 H530', 300, 130],
+      pc_alusrca: ['M45 190 V134 H470 V182 H480', 452, 150],
+      imem_ctrl: ['M212 186 H228 V62 H250', 214, 130],
+      imem_rs: ['M212 196 H290', 236, 192],
+      imem_rt: ['M212 222 H290', 236, 218],
+      imem_rd: ['M212 268 H290', 222, 264],
+      imem_sext: ['M212 276 H226 V350 H300', 230, 346],
+      regs_alu_a: ['M440 195 H480', 444, 190],
+      alusrca_alu: ['M502 195 H530', 504, 190],
+      regs_alusrc: ['M440 245 H480', 444, 240],
+      sext_alusrc: ['M430 350 H470 V270 H480', 436, 366],
+      sext_bradd: ['M430 340 H456 V108 H530', 460, 160],
+      alusrc_alu: ['M502 253 H530', 504, 270],
+      alu_dmem: ['M620 215 H690', 624, 210],
+      alu_pcmux: ['M575 175 V146 H701 V124', 590, 142],
+      bradd_pcmux: ['M646 92 H690', 648, 86],
+      pcmux_pc: ['M712 92 H740 V14 H8 V225 H20', 380, 12],
+      regs_dmem: ['M462 245 V306 H660 V265 H690', 560, 302],
+      dmem_wbmux: ['M810 220 H850', 812, 214],
+      alu_wbmux: ['M620 262 H670 V312 H836 V250 H850', 700, 326],
+      wbmux_regs: ['M872 232 H900 V396 H274 V290 H290', 560, 392],
+    },
+  },
+  sq: {
+    title: 'SUBLEQ execution model (one instruction: subtract and branch if ≤ 0)',
+    note: 'Conceptual organisation of the simulator’s SUBLEQ model: a program store holding A, B, C address words, a data memory with two reads and one write per instruction, a subtractor, a sign test and a PC selector. There are no registers and no opcode field. Values come from the executed instruction.',
+    nodes: {
+      pc: N(20, 190, 50, 70, 'PC'),
+      add4: N(100, 70, 74, 44, 'PC + 1'),
+      imem: N(100, 170, 120, 110, 'Program store', { sub: 'A · B · C' }),
+      dmem: N(290, 150, 160, 150, 'Data memory', { sub: 'read A, read B, write B' }),
+      alu: N(530, 175, 110, 100, 'Subtractor', { sub: 'MEM[B] − MEM[A]' }),
+      ctrl: N(690, 175, 120, 50, 'Sign test', { sub: 'result ≤ 0 ?' }),
+      pcmux: N(850, 60, 22, 64, 'Next PC', { mux: true }),
+    },
+    wires: {
+      pc_imem: ['M70 225 H100', 72, 218],
+      pc_add4: ['M84 225 V92 H100', 88, 150],
+      add4_pcmux: ['M174 92 H186 V30 H828 V80 H850', 470, 26],
+      imem_a: ['M220 196 H290', 232, 192],
+      imem_b: ['M220 236 H290', 232, 232],
+      imem_c: ['M220 270 H240 V380 H861 V124', 520, 376],
+      dmem_alu_b: ['M450 200 H530', 456, 195],
+      dmem_alu_a: ['M450 250 H530', 456, 245],
+      alu_dmem: ['M585 275 V330 H370 V300', 470, 344],
+      alu_ctrl: ['M640 200 H690', 642, 195],
+      ctrl_pcmux: ['M750 175 V100 H850', 756, 140],
+      pcmux_pc: ['M872 92 H900 V14 H8 V225 H20', 470, 12],
+    },
+  },
+  x86: {
+    title: 'x86-64 subset — conceptual execution model',
+    note: 'Conceptual execution model only. The simulator models x86 architectural effects (registers, ZF/SF/OF/CF flags, memory, next instruction); it does not model an x86 microarchitecture (no µop decoding, renaming or out-of-order execution), and instruction byte lengths are estimates. Values come from the executed instruction.',
+    nodes: {
+      pc: N(20, 190, 50, 70, 'RIP'),
+      add4: N(100, 70, 74, 44, 'RIP + len', { sub: '(estimate)' }),
+      imem: N(100, 170, 112, 110, 'Instruction', { sub: 'bytes (variable)' }),
+      ctrl: N(250, 40, 150, 44, 'Decoder (conceptual)'),
+      regs: N(290, 160, 150, 140, 'Registers', { sub: 'EAX ECX EDX EBX ESI EDI' }),
+      sext: N(300, 330, 130, 40, 'Address generation', { sub: 'base + displacement' }),
+      alu: N(530, 175, 90, 110, 'ALU'),
+      bradd: N(530, 70, 116, 44, 'Flags', { sub: 'ZF SF OF CF' }),
+      pcmux: N(690, 60, 22, 64, 'Next', { mux: true }),
+      dmem: N(690, 175, 120, 110, 'Data memory'),
+      wbmux: N(850, 200, 22, 64, 'Result', { mux: true }),
+    },
+    wires: {
+      pc_imem: ['M70 225 H100', 72, 218],
+      pc_add4: ['M84 225 V92 H100', 88, 150],
+      add4_pcmux: ['M174 92 H186 V30 H668 V80 H690', 420, 26],
+      imem_ctrl: ['M212 186 H228 V62 H250', 214, 130],
+      imem_rs: ['M212 210 H290', 230, 205],
+      imem_sext: ['M212 276 H226 V350 H300', 230, 346],
+      regs_alu_a: ['M440 195 H530', 446, 190],
+      regs_sext: ['M440 280 H462 V340 H430', 444, 300],
+      sext_dmem: ['M365 370 V386 H750 V285', 560, 382],
+      dmem_alu_b: ['M690 255 H660 V253 H620', 640, 270],
+      alu_flags: ['M575 175 V114', 580, 150],
+      flags_pcmux: ['M646 92 H690', 648, 86],
+      alu_wbmux: ['M620 262 H670 V312 H836 V250 H850', 700, 326],
+      regs_dmem: ['M462 245 V306 H660 V265 H690', 560, 302],
+      wbmux_regs: ['M872 232 H900 V396 H274 V290 H290', 600, 392],
+      pcmux_pc: ['M712 92 H740 V14 H8 V225 H20', 380, 12],
+    },
+  },
+};
+
+const fmt = (v) => (v == null ? '–' : String(v));
+const h8 = (n) => '0x' + (n >>> 0).toString(16).toUpperCase().padStart(4, '0');
+
+/* Six teaching phases with the active components, wire labels (values) and explanation. */
+const PHASE_NAMES = [
+  'Instruction fetch',
+  'Instruction decode',
+  'Register read',
+  'ALU execution',
+  'Memory access',
+  'Write-back / next PC',
+];
+function datapathPhases(d) {
+  const P = [];
+  const add = (active, wires, text, unused = []) => P.push({ name: PHASE_NAMES[P.length], active, wires, text, unused });
+  if (d.arch === 'mips' || d.arch === 'rv') {
+    const rv = d.arch === 'rv',
+      k = d.kind;
+    const pcs = h8(d.pcByte),
+      pc4 = h8(d.pcByte + 4);
+    add(['pc', 'imem', 'add4'], { pc_imem: 'PC=' + pcs, pc_add4: pcs, add4_pcmux: 'PC+4=' + pc4 }, `PC = ${pcs} (instruction ${d.index}) addresses instruction memory, which returns <code>${esc(d.text)}</code>${d.encoding ? ' = ' + d.encoding : ''}. In parallel the adder computes PC + 4 = ${pc4}.`);
+    const fieldText = d.fields ? d.fields.map((f) => f.label + '=' + f.value).join(' · ') : '';
+    const regRoles = d.reads.map((r) => r.role + ' = ' + r.label).join(', ');
+    const decWires = { imem_ctrl: 'opcode' };
+    if (d.reads[0]) decWires.imem_rs = d.reads.find((r) => /rs1?$/.test(r.role))?.label || d.reads[0].label;
+    const second = d.reads.find((r) => /rt|rs2/.test(r.role));
+    if (second) decWires.imem_rt = second.label;
+    if (d.write) decWires.imem_rd = 'dest ' + d.write.label;
+    if (!rv && d.write) decWires.regdst_regs = k === 'alu3' ? 'rd' : 'rt';
+    if (d.imm != null && k !== 'alu3') decWires.imem_sext = rv ? 'imm (' + d.control.ImmSel + '-type)' : 'imm16';
+    const decActive = ['imem', 'ctrl'].concat(!rv && d.write ? ['regdst'] : []);
+    add(decActive, decWires, `The control unit decodes <code>${esc(d.op)}</code> (${k === 'alu3' ? (rv ? 'R-type' : 'R-type') : k === 'branch' ? (rv ? 'B-type' : 'I-type branch') : k === 'store' ? (rv ? 'S-type' : 'I-type') : k === 'upper' ? 'U-type' : 'I-type'}). Fields: ${fieldText || 'see encoding'}. ${regRoles ? 'Registers named: ' + regRoles + '.' : 'No source registers.'} Control signals: ${Object.entries(d.control).map(([a, b]) => a + '=' + b).join(', ')}.`);
+    const rr = {};
+    const rrActive = ['regs'];
+    const readA = d.reads.find((r) => /rs1?$/.test(r.role));
+    const readB = d.reads.find((r) => /rt|rs2/.test(r.role));
+    if (readA) rr.regs_alu_a = readA.label + ' = ' + readA.value;
+    if (readB) rr.regs_alusrc = readB.label + ' = ' + readB.value;
+    if (d.imm != null) {
+      rrActive.push('sext');
+      rr.sext_alusrc = k === 'branch' ? '' : 'imm = ' + (k === 'upper' ? d.imm + ' (<<12 = ' + ((d.imm << 12) | 0) + ')' : d.imm);
+      if (k === 'branch') rr.sext_bradd = rv ? 'imm = ' + d.imm : 'imm<<2 = ' + d.imm;
+      if (!rr.sext_alusrc) delete rr.sext_alusrc;
+    }
+    if (rv && k === 'upper' && d.op === 'auipc') rr.pc_alusrca = 'PC=' + pcs;
+    add(rrActive, rr, d.reads.length ? `The register file reads ${d.reads.map((r) => r.label + ' = ' + r.value).join(' and ')}.${d.imm != null ? ' The ' + (rv ? 'immediate generator' : 'sign-extender') + ' produces ' + (k === 'branch' ? 'the branch offset ' + d.imm + ' bytes' : 'immediate ' + (k === 'upper' ? d.imm + ' (shifted left 12 = ' + ((d.imm << 12) | 0) + ')' : d.imm)) + '.' : ''}` : `No register is read. The immediate generator produces ${d.imm} << 12 = ${(d.imm << 12) | 0}.`);
+    const ex = {};
+    const exActive = ['alu'];
+    if (readA || (rv && k === 'upper')) {
+      if (rv) {
+        exActive.push('alusrca');
+        ex.alusrca_alu = 'A = ' + d.alu.a;
+      } else ex.regs_alu_a = 'A = ' + d.alu.a;
+    }
+    exActive.push('alusrc');
+    ex.alusrc_alu = 'B = ' + d.alu.b;
+    let exText;
+    if (k === 'branch') {
+      exActive.push('bradd');
+      ex.bradd_pcmux = 'target ' + (d.branch.targetByte == null ? '?' : h8(d.branch.targetByte));
+      ex.alu_pcmux = d.branch.test ? 'condition true' : 'condition false';
+      if (rv) ex.pc_bradd = 'PC=' + pcs;
+      else ex.add4_bradd = 'PC+4=' + pc4;
+      exText = `${rv ? 'The comparator' : 'The ALU subtracts (' + d.alu.a + ' − ' + d.alu.b + ' = ' + d.alu.result + ') and'} checks ${d.reads[0].label} ${d.branch.cond} ${d.reads[1].label}: ${d.alu.a} ${d.branch.cond} ${d.alu.b} is <b>${d.branch.test ? 'true' : 'false'}</b>. The branch adder computes the target ${rv ? 'PC + ' + d.branch.offsetBytes : 'PC+4 + (' + (d.branch.offsetBytes / 4) + ' << 2)'} = ${d.branch.targetByte == null ? '?' : h8(d.branch.targetByte)}.`;
+    } else if (k === 'load' || k === 'store') {
+      ex.alu_dmem = 'address ' + d.alu.result;
+      exText = `The ALU adds base ${d.alu.aFrom} = ${d.alu.a} and offset ${d.alu.b}: effective address = <b>${d.alu.result}</b> (word ${d.alu.result / 4}).`;
+    } else {
+      ex.alu_wbmux = 'result ' + d.alu.result;
+      exText = `The ALU computes ${d.alu.a} ${d.alu.op} ${d.alu.b} = <b>${d.alu.result}</b>${d.op === 'slt' ? ' (1 if less than, else 0)' : ''}.`;
+    }
+    add(exActive, ex, exText);
+    if (k === 'load') add(['dmem'], { alu_dmem: 'addr ' + d.mem.address, dmem_wbmux: 'data ' + d.mem.value }, `Data memory reads word ${d.mem.cell} (address ${d.mem.address}) and returns <b>${d.mem.value}</b>.`);
+    else if (k === 'store') add(['dmem'], { alu_dmem: 'addr ' + d.mem.address, regs_dmem: 'data ' + d.mem.value }, `Data memory writes <b>${d.mem.value}</b> to word ${d.mem.cell} (address ${d.mem.address})${d.mem.old !== undefined ? ', replacing ' + d.mem.old : ''}.`);
+    else if (k === 'branch') add(['pcmux'], { bradd_pcmux: 'target', add4_pcmux: 'PC+4', alu_pcmux: d.branch.taken ? 'take branch' : 'fall through' }, `No data-memory access. PCSrc selects ${d.branch.taken ? '<b>the branch target</b> ' + h8(d.branch.targetByte) : '<b>PC + 4</b> ' + pc4} because the condition is ${d.branch.test ? 'true' : 'false'}.`, ['dmem']);
+    else add([], { alu_wbmux: 'result ' + d.alu.result }, 'No data-memory access: the ALU result bypasses data memory.', ['dmem']);
+    const wb = {};
+    let wbText;
+    if (d.write) {
+      wb[k === 'load' ? 'dmem_wbmux' : 'alu_wbmux'] = String(k === 'load' ? d.mem.value : d.alu.result);
+      wb.wbmux_regs = d.write.label + ' ← ' + d.write.value;
+      wbText = d.write.discarded
+        ? `The result would be written to ${d.write.label}, but that register is hard-wired to 0, so the write is discarded.`
+        : `${rv ? 'ResultSrc' : 'MemtoReg'} selects the ${k === 'load' ? 'memory data' : 'ALU result'}; the register file writes <b>${d.write.label} ← ${d.write.value}</b> (was ${d.write.old}).`;
+    } else wbText = k === 'store' ? 'A store has no register write-back (RegWrite = 0).' : 'A branch has no register write-back (RegWrite = 0).';
+    wb.pcmux_pc = 'PC ← ' + h8(d.nextPcByte);
+    add(['pcmux', 'pc'].concat(d.write ? ['wbmux', 'regs'] : []), wb, wbText + ` The PC is updated to ${h8(d.nextPcByte)} (instruction ${d.nextIndex}).`, d.write ? [] : ['wbmux']);
+    return P;
+  }
+  if (d.arch === 'sq') {
+    const s = d.subleq;
+    add(['pc', 'imem', 'add4'], { pc_imem: 'PC=' + d.index, pc_add4: String(d.index), add4_pcmux: 'PC+1=' + (d.index + 1) }, `PC = ${d.index} selects <code>${esc(d.text)}</code>: three address words A, B, C.`);
+    add(['imem'], { imem_a: 'A = ' + s.a, imem_b: 'B = ' + s.b, imem_c: 'C = ' + fmt(s.c) }, `There is no opcode to decode: every instruction is SUBLEQ. The fields give A = cell ${s.a}, B = cell ${s.b}, branch target C = ${fmt(s.c)}.${s.indirect.length ? ' Indirect extension: A was read through pointer cell ' + s.indirect.join(', ') + '.' : ''}`);
+    add(['dmem'], { dmem_alu_a: 'MEM[A] = ' + s.va, dmem_alu_b: 'MEM[B] = ' + s.vb }, `Operand read: data memory supplies MEM[${s.a}] = ${s.va} and MEM[${s.b}] = ${s.vb}. (SUBLEQ has no registers, so operands come from memory.)`);
+    add(['alu'], { alu_ctrl: 'result ' + s.result }, `The subtractor computes MEM[B] − MEM[A] = ${s.vb} − ${s.va} = <b>${s.result}</b>.`);
+    add(['dmem'], { alu_dmem: 'MEM[' + s.b + '] ← ' + s.result }, `Memory write: MEM[${s.b}] ← ${s.result} (was ${s.vb}).`);
+    add(['ctrl', 'pcmux', 'pc'], { alu_ctrl: String(s.result), ctrl_pcmux: s.result <= 0 ? '≤ 0: take C' : '> 0: next', pcmux_pc: 'PC ← ' + d.nextIndex }, `Sign test: ${s.result} ${s.result <= 0 ? '≤ 0, so the branch is <b>taken</b>: PC ← C = ' + fmt(s.c) + (s.cIsNext ? ' (C is the next instruction, so execution continues in sequence)' : '') : '> 0, so execution <b>falls through</b>: PC ← ' + (d.index + 1)}.`);
+    return P;
+  }
+  if (d.arch === 'x86') {
+    add(['pc', 'imem', 'add4'], { pc_imem: 'RIP→#' + d.index, pc_add4: '#' + d.index }, `Instruction ${d.index}: <code>${esc(d.text)}</code> is fetched. x86 instructions have variable length; the byte count used here is an estimate.`);
+    add(['imem', 'ctrl'], { imem_ctrl: 'bytes' }, `Conceptual decode of <code>${esc(d.op)}</code>${d.mem ? ' with a memory operand (the CISC feature: one instruction both accesses memory and computes)' : ''}.`);
+    if (d.branch) {
+      add([], {}, 'A jump reads no general-purpose registers.', ['regs']);
+      add(['bradd'], { flags_pcmux: d.branch.cond }, `The condition ${d.branch.cond} is evaluated from the flags set by an earlier instruction (ZF=${+!!d.flags.before?.z} SF=${+!!d.flags.before?.s} OF=${+!!d.flags.before?.o}).`);
+      add([], {}, 'No data-memory access.', ['dmem']);
+      add(['pcmux', 'pc'], { pcmux_pc: 'RIP→#' + d.nextIndex }, `The jump is <b>${d.branch.taken ? 'taken' : 'not taken'}</b>: next instruction ${d.nextIndex}.`);
+      return P;
+    }
+    const rr = {};
+    if (d.reads.length) rr.regs_alu_a = d.reads.map((r) => r.label + '=' + r.value).join(', ');
+    if (d.mem) rr.regs_sext = 'base';
+    add(['regs'].concat(d.mem ? ['sext'] : []), rr, `Operands: ${d.reads.map((r) => r.label + ' = ' + r.value).join(', ') || 'none'}.${d.mem ? ' The address generator adds base + displacement = ' + d.mem.address + '.' : ''}`);
+    const ex = {};
+    if (d.alu && !d.alu.agu) {
+      ex.alu_flags = 'flags';
+      if (d.mem && d.mem.type === 'read') ex.dmem_alu_b = 'MEM=' + d.mem.value;
+      add(['alu', 'bradd'].concat(d.mem && d.mem.type === 'read' ? ['dmem'] : []), ex, `${d.mem && d.mem.type === 'read' ? 'The memory operand MEM[' + d.mem.address + '] = ' + d.mem.value + ' is read, then the' : 'The'} ALU computes ${d.alu.a} ${d.alu.op} ${d.alu.b} = <b>${d.alu.result}</b> and updates the flags: ZF=${+!!d.flags.after?.z} SF=${+!!d.flags.after?.s} OF=${+!!d.flags.after?.o} CF=${+!!d.flags.after?.c}.`);
+    } else add([], {}, 'A MOV performs no ALU operation and leaves the flags unchanged.', ['alu']);
+    if (d.mem && d.mem.type === 'read' && d.alu && !d.alu.agu)
+      add([], {}, `No further memory access: the memory operand (MEM[${d.mem.address}] = ${d.mem.value}) was already read before the ALU step. This load-then-operate pattern is what lets one x86 instruction do the work of a RISC load plus an add.`, ['dmem']);
+    else if (d.mem) add(['dmem', 'sext'], d.mem.type === 'write' ? { sext_dmem: 'addr ' + d.mem.address, regs_dmem: 'data ' + d.mem.value } : { sext_dmem: 'addr ' + d.mem.address }, d.mem.type === 'write' ? `Data memory writes <b>${d.mem.value}</b> to word ${d.mem.cell} (address ${d.mem.address}).` : `Data memory read of word ${d.mem.cell} (address ${d.mem.address}) returned ${d.mem.value}.`);
+    else add([], {}, 'No data-memory access.', ['dmem']);
+    const wb = { pcmux_pc: 'RIP→#' + d.nextIndex };
+    if (d.write) wb.wbmux_regs = d.write.label + ' ← ' + d.write.value;
+    add(['pc', 'pcmux'].concat(d.write ? ['wbmux', 'regs'] : []), wb, d.write ? `Register write: <b>${d.write.label} ← ${d.write.value}</b> (was ${d.write.old}). Next instruction ${d.nextIndex}.` : `${d.op === 'cmp' ? 'CMP only sets flags; no register is written.' : 'No register write.'} Next instruction ${d.nextIndex}.`);
+    return P;
+  }
+  return P;
+}
+
+const _internal = { regNum };
+
+
+/* ===== src/pipeline.js ===== */
+/* Five-stage, in-order teaching pipeline. This is a timing model, not RTL. */
+const RV_NAMES = {
+  zero: 'x0',
+  ra: 'x1',
+  sp: 'x2',
+  gp: 'x3',
+  tp: 'x4',
+  t0: 'x5',
+  t1: 'x6',
+  t2: 'x7',
+  s0: 'x8',
+  s1: 'x9',
+  a0: 'x10',
+  a1: 'x11',
+  a2: 'x12',
+  a3: 'x13',
+  a4: 'x14',
+  a5: 'x15',
+  a6: 'x16',
+  a7: 'x17',
+  s2: 'x18',
+  s3: 'x19',
+  s4: 'x20',
+  s5: 'x21',
+  s6: 'x22',
+  s7: 'x23',
+  s8: 'x24',
+  s9: 'x25',
+  s10: 'x26',
+  s11: 'x27',
+  t3: 'x28',
+  t4: 'x29',
+  t5: 'x30',
+  t6: 'x31',
+};
+function normReg(v, arch) {
+  const n = String(v || '')
+    .replace(/^\$/, '')
+    .toLowerCase();
+  if (arch === 'rv') return RV_NAMES[n] || n;
+  return n;
+}
+/* Opcode tables are per ISA and must stay in sync with the interpreter's assembler
+   (tests/regression.test.js checks that every opcode the assembler accepts is listed here).
+   kind: load | store | alu3 (rd,rs,rt) | alui (rd,rs,imm) | upper (rd,imm) | branch (rs,rt,label) */
+const PIPE_OPS = {
+  mips: {
+    lw: 'load',
+    sw: 'store',
+    addu: 'alu3',
+    subu: 'alu3',
+    slt: 'alu3',
+    addiu: 'alui',
+    beq: 'branch',
+    bne: 'branch',
+  },
+  rv: {
+    lw: 'load',
+    sw: 'store',
+    add: 'alu3',
+    sub: 'alu3',
+    slt: 'alu3',
+    addi: 'alui',
+    lui: 'upper',
+    auipc: 'upper',
+    beq: 'branch',
+    bne: 'branch',
+    blt: 'branch',
+    bge: 'branch',
+  },
+};
+const OPERANDS = { load: 2, store: 2, alu3: 3, alui: 3, upper: 2, branch: 3 };
+const isZeroReg = (r) => r === 'x0' || r === 'zero' || r === '0';
+const PIPELINE_SUPPORTED_ARCHS = Object.keys(PIPE_OPS);
+function pipelineOpcodes(arch) {
+  if (!PIPE_OPS[arch])
+    throw new Error(
+      'Pipeline model supports only ' + PIPELINE_SUPPORTED_ARCHS.join(' and ') + ', not "' + arch + '".'
+    );
+  return Object.keys(PIPE_OPS[arch]);
+}
+function decodeHazards(assembly, arch) {
+  if (!PIPE_OPS[arch])
+    throw new Error(
+      'Pipeline model supports only ' + PIPELINE_SUPPORTED_ARCHS.join(' and ') + ', not "' + arch + '".'
+    );
+  const line = String(assembly)
+    .replace(/^[A-Za-z_]\w*:\s*/, '')
+    .trim();
+  const m = line.match(/^([A-Za-z]+)\s*(.*)$/);
+  if (!m) throw new Error('Pipeline model cannot parse instruction "' + assembly + '".');
+  const op = m[1].toLowerCase(),
+    kind = PIPE_OPS[arch][op];
+  if (!kind)
+    throw new Error(
+      'Pipeline model: unsupported ' +
+        arch +
+        ' opcode "' +
+        op +
+        '" in "' +
+        line +
+        '". Add it to PIPE_OPS with its hazard behaviour instead of letting it run with no dependencies.'
+    );
+  const a = m[2].split(',').map((x) => x.trim());
+  if (a.length !== OPERANDS[kind] || a.some((x) => !x))
+    throw new Error('Pipeline model: "' + line + '" needs ' + OPERANDS[kind] + ' operands.');
+  const regOf = (x) => {
+    const mm = String(x).match(/[A-Za-z$][\w$]*|\$\d+/);
+    if (!mm)
+      throw new Error('Pipeline model: cannot find a register in operand "' + x + '" of "' + line + '".');
+    const r = normReg(mm[0], arch);
+    return isZeroReg(r) ? null : r; // the zero register never carries a dependency
+  };
+  switch (kind) {
+    case 'load':
+      return { src: [regOf(a[1])], dst: regOf(a[0]), load: true, branch: false };
+    case 'store':
+      return { src: [regOf(a[0]), regOf(a[1])], dst: null, load: false, branch: false };
+    case 'alu3':
+      return { src: [regOf(a[1]), regOf(a[2])], dst: regOf(a[0]), load: false, branch: false };
+    case 'alui':
+      return { src: [regOf(a[1])], dst: regOf(a[0]), load: false, branch: false };
+    case 'upper':
+      return { src: [], dst: regOf(a[0]), load: false, branch: false };
+    case 'branch':
+      return { src: [regOf(a[0]), regOf(a[1])], dst: null, load: false, branch: true };
+  }
+}
+/* Convert an interpreter trace (engine.js step() records) into pipeline input.
+   `taken` comes from the interpreter's own branch outcome, not from guessing. */
+function traceToPipelineInput(trace) {
+  return trace.map((t) => ({
+    t: t.t,
+    taken: t.k === 'branch' ? /^branch TAKEN/.test(String(t.note)) : false,
+  }));
+}
+function simulatePipeline(assembly, options = {}) {
+  const arch = options.arch || 'rv';
+  const forwarding = options.forwarding !== false;
+  const branchPenalty = Math.max(0, Math.min(10, Number(options.branchPenalty ?? 2) || 0));
+  const branchPolicy = options.branchPolicy ?? 'every';
+  if (branchPolicy !== 'every' && branchPolicy !== 'taken')
+    throw new Error('branchPolicy must be "every" or "taken", not "' + branchPolicy + '".');
+  const producers = [];
+  const rows = [];
+  let nextIF = 1,
+    dataStalls = 0,
+    branchBubbles = 0,
+    branchesExecuted = 0,
+    branchesTaken = 0;
+  for (let index = 0; index < assembly.length; index++) {
+    const text = typeof assembly[index] === 'string' ? assembly[index] : assembly[index].t;
+    const d = decodeHazards(text, arch);
+    let taken = false;
+    if (d.branch) {
+      if (branchPolicy === 'taken') {
+        if (typeof assembly[index] !== 'object' || typeof assembly[index].taken !== 'boolean')
+          throw new Error(
+            'branchPolicy "taken" needs a {t, taken} entry for branch "' +
+              text +
+              '" (use traceToPipelineInput on an interpreter trace).'
+          );
+      }
+      taken = typeof assembly[index] === 'object' && assembly[index].taken === true;
+    }
+    const IF = nextIF,
+      ID = IF + 1;
+    let EX = ID + 1;
+    let stalls = 0;
+    for (const src of d.src.filter(Boolean)) {
+      const p = [...producers].reverse().find((x) => x.dst === src);
+      if (!p) continue;
+      const ready = forwarding ? (p.load ? p.MEM : p.EX) : p.WB;
+      if (EX <= ready) {
+        const add = ready + 1 - EX;
+        stalls = Math.max(stalls, add);
+      }
+    }
+    EX += stalls;
+    dataStalls += stalls;
+    const MEM = EX + 1,
+      WB = EX + 2;
+    const row = {
+      index,
+      assembly: text,
+      IF,
+      ID,
+      EX,
+      MEM,
+      WB,
+      stalls,
+      branch: d.branch,
+      src: d.src,
+      dst: d.dst,
+      load: d.load,
+    };
+    row.stages = {};
+    row.stages[IF] = 'IF';
+    for (let c = ID; c < EX; c++) row.stages[c] = c === ID ? 'ID' : 'ID*';
+    row.stages[EX] = 'EX';
+    row.stages[MEM] = 'MEM';
+    row.stages[WB] = 'WB';
+    rows.push(row);
+    if (d.dst) producers.push({ dst: d.dst, EX, MEM, WB, load: d.load });
+    let bubbles = 0;
+    if (d.branch) {
+      branchesExecuted++;
+      if (taken) branchesTaken++;
+      bubbles = branchPolicy === 'every' || taken ? branchPenalty : 0;
+      branchBubbles += bubbles;
+    }
+    row.taken = taken;
+    row.branchBubbles = bubbles;
+    nextIF = IF + 1 + stalls + bubbles;
+  }
+  const cycles = rows.length ? Math.max(...rows.map((r) => r.WB)) : 0;
+  return {
+    rows,
+    cycles,
+    instructions: rows.length,
+    cpi: rows.length ? cycles / rows.length : 0,
+    dataStalls,
+    branchBubbles,
+    totalStalls: dataStalls + branchBubbles,
+    forwarding,
+    branchPenalty,
+    branchPolicy,
+    branchesExecuted,
+    branchesTaken,
+    arch,
+  };
+}
+
+/* ---------- Interactive explanation model (4.0) ----------
+   explainPipeline() takes an interpreter trace, runs simulatePipeline() on it, and
+   derives, for every clock cycle, what occupies IF/ID/EX/MEM/WB, which hazards were
+   detected, which forwarding paths carry which values, where bubbles came from, and
+   when branches resolve. It also re-derives every source operand value the pipeline
+   would deliver (forwarded or read from the register file at that cycle) and checks
+   it against the interpreter's architectural value, so a timing bug that would read a
+   stale register is reported instead of hidden. */
+const STAGES = ['IF', 'ID', 'EX', 'MEM', 'WB'];
+function regKeyFor(arch, name) {
+  return normReg(name, arch);
+}
+function explainPipeline(trace, options = {}) {
+  const arch = options.arch || 'rv';
+  const input = traceToPipelineInput(trace);
+  const r = simulatePipeline(input, options);
+  /* test hook: lets a test deliberately corrupt the schedule to prove the operand check catches it */
+  if (typeof options.mutateSchedule === 'function') options.mutateSchedule(r.rows);
+  const rows = r.rows;
+  const n = rows.length;
+  const valueOf = (i, reg) => {
+    /* architectural value of `reg` after instruction i (engine register keys) */
+    const t = trace[i];
+    return t.registersAfter[engineKey(arch, reg)] | 0;
+  };
+  const initialValue = (reg) => (trace[0]?.registersBefore?.[engineKey(arch, reg)] | 0) || 0;
+  const operands = [];
+  const hazards = [];
+  for (let i = 0; i < n; i++) {
+    const row = rows[i];
+    row.fetchStart = row.IF;
+    row.deps = [];
+    const seen = new Set();
+    row.src.forEach((reg, slot) => {
+      if (!reg || seen.has(reg)) return;
+      seen.add(reg);
+      let p = -1;
+      for (let j = i - 1; j >= 0; j--)
+        if (rows[j].dst === reg) {
+          p = j;
+          break;
+        }
+      const naturalEX = row.ID + 1;
+      const readCycle = row.EX - 1; /* last ID cycle: register file read (write first half, read second half) */
+      /* value the hardware delivers */
+      let via, delivered, source;
+      const fwdCands = [];
+      if (r.forwarding)
+        for (let j = i - 1; j >= 0; j--) {
+          const q = rows[j];
+          if (q.dst !== reg) continue;
+          if (q.MEM === row.EX && !q.load) fwdCands.push({ j, path: 'EX/MEM → EX' });
+          else if (q.WB === row.EX) fwdCands.push({ j, path: 'MEM/WB → EX' });
+        }
+      if (fwdCands.length) {
+        const c = fwdCands[0];
+        via = c.path;
+        delivered = valueOf(c.j, reg);
+        source = c.j;
+      } else {
+        let q = -1;
+        for (let j = i - 1; j >= 0; j--)
+          if (rows[j].dst === reg && rows[j].WB <= readCycle) {
+            q = j;
+            break;
+          }
+        via = 'register file';
+        delivered = q >= 0 ? valueOf(q, reg) : initialValue(reg);
+        source = q;
+      }
+      const expected = trace[i].registersBefore[engineKey(arch, reg)] | 0;
+      const op = { consumer: i, reg, slot, via, source, delivered, expected, ok: delivered === expected };
+      operands.push(op);
+      if (p < 0) return;
+      const producer = rows[p];
+      const hazard = producer.WB > row.ID; /* value not in the register file when first read */
+      if (!hazard) {
+        row.deps.push({ producer: p, reg, hazard: false, via: 'register file', distance: i - p });
+        return;
+      }
+      const ready = r.forwarding ? (producer.load ? producer.MEM : producer.EX) : producer.WB;
+      const stallsNeeded = Math.max(0, ready + 1 - naturalEX);
+      const kind = producer.load && r.forwarding && stallsNeeded > 0 ? 'load-use' : 'RAW';
+      const h = {
+        consumer: i,
+        producer: p,
+        reg,
+        kind,
+        distance: i - p,
+        stallsNeeded,
+        resolvedBy: via,
+        forwarded: via !== 'register file',
+        value: delivered,
+        detectCycle: row.ID,
+        useCycle: row.EX,
+      };
+      hazards.push(h);
+      row.deps.push({ producer: p, reg, hazard: true, via, kind, stallsNeeded, distance: i - p });
+    });
+  }
+  /* instruction i+1 is fetched while i is decoding; when i stalls in ID, i+1 is held in IF */
+  for (let i = 1; i < n; i++) {
+    const prev = rows[i - 1];
+    if (!prev.branch && prev.stalls > 0) rows[i].fetchStart = prev.IF + 1;
+    if (prev.branch && prev.branchBubbles === 0 && prev.stalls > 0) rows[i].fetchStart = prev.IF + 1;
+  }
+  const cycles = r.cycles;
+  /* Build per-cycle occupancy in O(cycles + rows) using lookup arrays (large programs stay fast). */
+  const mkArr = () => Array(cycles + 2).fill(-1);
+  const at = { IF: mkArr(), ID: mkArr(), EX: mkArr(), MEM: mkArr(), WB: mkArr() },
+    hold = mkArr(),
+    idStall = mkArr(),
+    brFetch = mkArr(),
+    brStallFetch = mkArr();
+  const byEX = new Map(),
+    byDetect = new Map(),
+    byResolve = new Map(),
+    byWB = new Map();
+  const push = (m, k, v) => (m.has(k) ? m.get(k).push(v) : m.set(k, [v]));
+  for (let i = 0; i < n; i++) {
+    const row = rows[i];
+    for (let c = row.fetchStart; c < row.IF; c++) hold[c] = i;
+    at.IF[row.IF] = i;
+    at.ID[row.ID] = i;
+    for (let c = row.ID + 1; c < row.EX; c++) idStall[c] = i;
+    at.EX[row.EX] = i;
+    at.MEM[row.MEM] = i;
+    at.WB[row.WB] = i;
+    if (row.branch && row.branchBubbles > 0) {
+      for (let c = row.IF + row.stalls + 1; c <= row.IF + row.stalls + row.branchBubbles && c <= cycles; c++) brFetch[c] = i;
+      for (let c = row.IF + 1; c <= row.IF + row.stalls && c <= cycles; c++) brStallFetch[c] = i;
+    }
+    if (row.branch) byResolve.set(row.EX, i);
+    if (row.dst) push(byWB, row.WB, i);
+  }
+  for (const h of hazards) push(byDetect, h.detectCycle, h);
+  for (const o of operands) if (o.via !== 'register file') push(byEX, rows[o.consumer].EX, o);
+  const timeline = [];
+  let completed = 0;
+  for (let c = 1; c <= cycles; c++) {
+    const slot = {};
+    STAGES.forEach((st, k) => {
+      if (st === 'IF') {
+        if (at.IF[c] >= 0) return (slot.IF = { row: at.IF[c], state: 'active' });
+        if (hold[c] >= 0) return (slot.IF = { row: hold[c], state: 'hold' });
+      } else if (st === 'ID') {
+        if (at.ID[c] >= 0) return (slot.ID = { row: at.ID[c], state: 'active' });
+        if (idStall[c] >= 0) return (slot.ID = { row: idStall[c], state: 'stall' });
+      } else if (at[st][c] >= 0) return (slot[st] = { row: at[st][c], state: 'active' });
+      /* explain the empty stage */
+      if (k >= 2) {
+        const ins = c - (k - 2); /* cycle in which a bubble would have entered EX */
+        if (ins >= 1 && idStall[ins] >= 0) return (slot[st] = { row: null, state: 'bubble', cause: 'stall', by: idStall[ins] });
+      }
+      const fc = c - k;
+      if (fc >= 1 && brFetch[fc] >= 0)
+        return (slot[st] = { row: null, state: r.branchPolicy === 'taken' ? 'flush' : 'bubble', cause: 'branch', by: brFetch[fc] });
+      if (fc >= 1 && brStallFetch[fc] >= 0) return (slot[st] = { row: null, state: 'bubble', cause: 'branch', by: brStallFetch[fc] });
+      slot[st] = { row: null, state: 'empty', cause: c < (rows[0]?.WB ?? 0) ? 'fill' : 'drain' };
+    });
+    const forwards = (byEX.get(c) || []).map((o) => {
+      const h = hazards.find((x) => x.consumer === o.consumer && x.reg === o.reg);
+      return h || { consumer: o.consumer, producer: o.source, reg: o.reg, resolvedBy: o.via, value: o.delivered, forwarded: true };
+    });
+    const writes = (byWB.get(c) || []).map((i) => ({ row: i, reg: rows[i].dst, value: valueOf(i, rows[i].dst) }));
+    completed += at.WB[c] >= 0 ? 1 : 0;
+    timeline.push({
+      cycle: c,
+      slot,
+      forwards,
+      detected: byDetect.get(c) || [],
+      stalled: idStall[c],
+      branchResolve: byResolve.has(c) ? byResolve.get(c) : -1,
+      writes,
+      completed,
+    });
+  }
+  const finalRegs = trace.length ? { ...trace[trace.length - 1].registersAfter } : {};
+  const mhz = Number(options.clockMHz ?? 0);
+  return {
+    ...r,
+    rows,
+    timeline,
+    hazards,
+    operands,
+    operandMismatches: operands.filter((o) => !o.ok),
+    finalRegs,
+    loadUseHazards: hazards.filter((h) => h.kind === 'load-use').length,
+    forwardedOperands: operands.filter((o) => o.via !== 'register file').length,
+    clockMHz: mhz || null,
+    timeNs: mhz > 0 ? (r.cycles * 1000) / mhz : null,
+  };
+}
+/* pipeline names (x5 / t0) -> engine register keys (x5 for RV, t0 for MIPS) */
+function engineKey(arch, reg) {
+  return regKeyFor(arch, reg);
+}
+
+
+/* ===== src/cache.js ===== */
+/* Data-cache models.
+   simulateCache: set-associative cache (direct-mapped = 1 way, fully associative = lines ways)
+   with LRU / FIFO / seeded-random replacement, write-back or write-through, and
+   write-allocate or no-write-allocate. Every access records its tag/index/offset
+   split, the set it maps to, the way it hit or filled, any victim, and a copy of
+   the set afterwards, so the visualiser only ever shows simulated state.
+   simulateDirectMappedCache keeps the 3.x API (direct-mapped, write-allocate). */
+
+const pow2 = (n) => Number.isInteger(n) && n > 0 && (n & (n - 1)) === 0;
+const log2 = (n) => Math.round(Math.log2(n));
+const CACHE_POLICIES = ['LRU', 'FIFO', 'RANDOM'];
+const WRITE_POLICIES = ['write-back', 'write-through'];
+
+/* Small deterministic PRNG so "random" replacement is reproducible (same seed, same victims). */
+function lcg(seed) {
+  let s = seed >>> 0 || 1;
+  return () => {
+    s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+    return s / 4294967296;
+  };
+}
+
+function cacheGeometry(options = {}) {
+  const cacheSize = Number(options.cacheSize ?? 64),
+    blockSize = Number(options.blockSize ?? 16),
+    lines = cacheSize / blockSize;
+  let associativity = options.associativity ?? 1;
+  if (associativity === 'full') associativity = lines;
+  associativity = Number(associativity);
+  if (!pow2(cacheSize) || !pow2(blockSize) || blockSize > cacheSize)
+    throw new Error('Cache and block sizes must be powers of two, and block size cannot exceed cache size.');
+  if (blockSize < 4) throw new Error('Block size must be at least one 4-byte word.');
+  if (!pow2(associativity) || associativity > lines)
+    throw new Error(
+      'Associativity must be a power of two from 1 to ' + lines + ' (the number of lines in this cache).'
+    );
+  const sets = lines / associativity,
+    offsetBits = log2(blockSize),
+    indexBits = log2(sets),
+    addressBits = Number(options.addressBits ?? 16);
+  if (!Number.isInteger(addressBits) || addressBits < offsetBits + indexBits || addressBits > 32)
+    throw new Error('Address width is too small for this cache geometry.');
+  return {
+    cacheSize,
+    blockSize,
+    lines,
+    associativity,
+    sets,
+    offsetBits,
+    indexBits,
+    tagBits: addressBits - offsetBits - indexBits,
+    addressBits,
+  };
+}
+
+/* Split an address the way the hardware does: | tag | index | offset |. */
+function splitAddress(address, g) {
+  const block = Math.floor(address / g.blockSize);
+  return {
+    address,
+    block,
+    offset: address % g.blockSize,
+    index: block % g.sets,
+    tag: Math.floor(block / g.sets),
+  };
+}
+
+function simulateCache(accesses, options = {}) {
+  const g = cacheGeometry(options);
+  const hitTime = Number(options.hitTime ?? 1),
+    missPenalty = Number(options.missPenalty ?? 20);
+  if (!Number.isFinite(hitTime) || hitTime < 0 || !Number.isFinite(missPenalty) || missPenalty < 0)
+    throw new Error('Cache timing values must be non-negative.');
+  const policy = String(options.policy ?? 'LRU').toUpperCase();
+  if (!CACHE_POLICIES.includes(policy))
+    throw new Error('Replacement policy must be LRU, FIFO or RANDOM, not "' + options.policy + '".');
+  const writePolicy = options.writePolicy ?? 'write-back';
+  if (!WRITE_POLICIES.includes(writePolicy))
+    throw new Error('Write policy must be write-back or write-through.');
+  const writeAllocate = options.writeAllocate !== false;
+  const rand = lcg(options.seed ?? 12345);
+  /* each line: {valid, dirty, tag, block, lastUse, filledAt} */
+  const sets = Array.from({ length: g.sets }, () =>
+    Array.from({ length: g.associativity }, () => ({
+      valid: false,
+      dirty: false,
+      tag: null,
+      block: null,
+      lastUse: -1,
+      filledAt: -1,
+    }))
+  );
+  /* fully associative LRU shadow of the same capacity: separates capacity from conflict misses (3C model) */
+  const shadow = [],
+    seenBlocks = new Set();
+  let hits = 0,
+    misses = 0,
+    reads = 0,
+    writes = 0,
+    writebacks = 0,
+    memoryWrites = 0,
+    compulsory = 0,
+    capacity = 0,
+    conflict = 0,
+    t = 0;
+  const trace = [];
+  for (const a of accesses || []) {
+    const address = Number(typeof a === 'number' ? a : a.address);
+    if (!Number.isFinite(address) || address < 0 || !Number.isInteger(address))
+      throw new Error('Invalid memory address ' + (typeof a === 'number' ? a : a?.address));
+    if (address >= 2 ** g.addressBits)
+      throw new Error('Address ' + address + ' does not fit in ' + g.addressBits + ' address bits.');
+    const type = (typeof a === 'object' && a.type) || 'read';
+    const isWrite = type === 'write';
+    if (isWrite) writes++;
+    else reads++;
+    const parts = splitAddress(address, g),
+      set = sets[parts.index];
+    let way = set.findIndex((l) => l.valid && l.tag === parts.tag);
+    const hit = way >= 0;
+    /* 3C classification uses the shadow fully associative LRU cache */
+    const shadowPos = shadow.indexOf(parts.block);
+    const shadowHit = shadowPos >= 0;
+    if (shadowHit) shadow.splice(shadowPos, 1);
+    shadow.unshift(parts.block);
+    if (shadow.length > g.lines) shadow.pop();
+    let missKind = null,
+      victim = null,
+      action;
+    if (hit) {
+      hits++;
+      const line = set[way];
+      line.lastUse = t;
+      if (isWrite) {
+        if (writePolicy === 'write-back') {
+          line.dirty = true;
+          action = 'Write hit: data updated in the cache line and the line is marked dirty (memory updated later).';
+        } else {
+          memoryWrites++;
+          action = 'Write hit: cache line and main memory are both updated (write-through).';
+        }
+      } else action = 'Read hit: data returned from the cache.';
+    } else {
+      misses++;
+      if (!seenBlocks.has(parts.block)) {
+        missKind = 'compulsory';
+        compulsory++;
+      } else if (!shadowHit) {
+        missKind = 'capacity';
+        capacity++;
+      } else {
+        missKind = 'conflict';
+        conflict++;
+      }
+      const allocate = !isWrite || writeAllocate;
+      if (allocate) {
+        way = set.findIndex((l) => !l.valid);
+        if (way < 0) {
+          if (policy === 'LRU') way = set.reduce((best, l, i) => (l.lastUse < set[best].lastUse ? i : best), 0);
+          else if (policy === 'FIFO')
+            way = set.reduce((best, l, i) => (l.filledAt < set[best].filledAt ? i : best), 0);
+          else way = Math.floor(rand() * g.associativity);
+          const old = set[way];
+          victim = { way, tag: old.tag, block: old.block, dirty: old.dirty, writeback: old.dirty };
+          if (old.dirty) writebacks++;
+        }
+        const line = set[way];
+        line.valid = true;
+        line.tag = parts.tag;
+        line.block = parts.block;
+        line.lastUse = t;
+        line.filledAt = t;
+        line.dirty = isWrite && writePolicy === 'write-back';
+        if (isWrite && writePolicy === 'write-through') memoryWrites++;
+        action =
+          (isWrite ? 'Write miss: ' : 'Read miss: ') +
+          'block ' +
+          parts.block +
+          ' loaded into set ' +
+          parts.index +
+          ', way ' +
+          way +
+          (victim
+            ? ' after evicting block ' + victim.block + ' (' + policy + ')' + (victim.writeback ? ', which was dirty and is written back first' : '')
+            : ' (an empty line was available)') +
+          '.' +
+          (isWrite ? (writePolicy === 'write-back' ? ' Line marked dirty.' : ' Memory also updated (write-through).') : '');
+      } else {
+        way = -1;
+        memoryWrites++;
+        action = 'Write miss with no-write-allocate: memory is updated directly and the cache is unchanged.';
+      }
+    }
+    seenBlocks.add(parts.block);
+    trace.push({
+      step: t,
+      ...parts,
+      type,
+      hit,
+      way,
+      missKind,
+      victim,
+      action,
+      setAfter: set.map((l) => ({ ...l })),
+    });
+    t++;
+  }
+  const total = hits + misses,
+    missRate = total ? misses / total : 0;
+  return {
+    ...g,
+    policy,
+    writePolicy,
+    writeAllocate,
+    hitTime,
+    missPenalty,
+    hits,
+    misses,
+    accesses: total,
+    reads,
+    writes,
+    missRate,
+    hitRate: total ? hits / total : 0,
+    /* AMAT = hit time + miss rate x miss penalty (the standard single-level definition).
+       Write-back traffic is reported separately, not folded into AMAT. */
+    amat: hitTime + missRate * missPenalty,
+    writebacks,
+    memoryWrites,
+    missBreakdown: { compulsory, capacity, conflict },
+    finalSets: sets.map((s) => s.map((l) => ({ ...l }))),
+    trace,
+  };
+}
+
+/* 3.x API: direct-mapped, write-allocate. Kept so existing callers and tests are unchanged. */
+function simulateDirectMappedCache(accesses, options = {}) {
+  const cacheSize = Number(options.cacheSize ?? 64),
+    blockSize = Number(options.blockSize ?? 16);
+  if (!pow2(cacheSize) || !pow2(blockSize) || blockSize > cacheSize || cacheSize % blockSize)
+    throw new Error('Cache and block sizes must be powers of two, and block size cannot exceed cache size.');
+  const clean = [];
+  for (const a of accesses || []) {
+    const address = Number(typeof a === 'number' ? a : a.address);
+    if (!Number.isFinite(address) || address < 0) continue;
+    clean.push({ address, type: (typeof a === 'object' && a.type) || 'read' });
+  }
+  const r = simulateCache(clean, {
+    ...options,
+    associativity: 1,
+    policy: 'LRU',
+    writePolicy: 'write-back',
+    writeAllocate: true,
+    addressBits: 32,
+  });
+  return {
+    hits: r.hits,
+    misses: r.misses,
+    accesses: r.accesses,
+    missRate: r.missRate,
+    hitRate: r.hitRate,
+    amat: r.amat,
+    cacheSize: r.cacheSize,
+    blockSize: r.blockSize,
+    lines: r.lines,
+    hitTime: r.hitTime,
+    missPenalty: r.missPenalty,
+    trace: r.trace.map((x) => ({
+      address: x.address,
+      type: x.type,
+      block: x.block,
+      index: x.index,
+      tag: x.tag,
+      hit: x.hit,
+    })),
+  };
+}
+
+/* Reproducible address-pattern generators for cache experiments (byte addresses, word aligned). */
+const CACHE_PATTERNS = {
+  sequential: 'Sequential: walk an array once, word by word (spatial locality)',
+  repeated: 'Repeated loop: walk a small array several times (temporal + spatial locality)',
+  strided: 'Strided: touch one word per block (spatial locality wasted)',
+  conflict: 'Conflict: alternate between two addresses that share a set',
+  random: 'Random: seeded pseudo-random words in a region (little locality)',
+  matrix: 'Column walk: read a 4×4 word matrix column by column',
+};
+function cachePattern(kind, opts = {}) {
+  const words = Math.max(1, Math.min(256, Number(opts.words ?? 16))),
+    passes = Math.max(1, Math.min(8, Number(opts.passes ?? 3))),
+    base = Number(opts.base ?? 0),
+    stride = Number(opts.stride ?? 16),
+    out = [];
+  const rd = (address) => out.push({ address, type: 'read' });
+  switch (kind) {
+    case 'sequential':
+      for (let i = 0; i < words; i++) rd(base + 4 * i);
+      break;
+    case 'repeated':
+      for (let p = 0; p < passes; p++) for (let i = 0; i < words; i++) rd(base + 4 * i);
+      break;
+    case 'strided':
+      for (let p = 0; p < passes; p++) for (let i = 0; i < words; i++) rd(base + stride * i);
+      break;
+    case 'conflict': {
+      const span = Number(opts.span ?? 64);
+      for (let i = 0; i < words; i++) rd(base + (i % 2 ? span : 0));
+      break;
+    }
+    case 'random': {
+      const r = lcg(opts.seed ?? 7),
+        region = Math.max(1, Number(opts.region ?? 64));
+      for (let i = 0; i < words; i++) rd(base + 4 * Math.floor(r() * region));
+      break;
+    }
+    case 'matrix':
+      for (let p = 0; p < passes; p++)
+        for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) rd(base + 4 * (r * 4 + c));
+      break;
+    default:
+      throw new Error('Unknown cache pattern "' + kind + '".');
+  }
+  return out;
+}
+
+/* Parse a user-typed access list: "0, 4, w8, r12, 0x40" (w = write, r or nothing = read). */
+function parseAccessList(text) {
+  const out = [];
+  for (const raw of String(text).split(/[\s,;]+/)) {
+    if (!raw) continue;
+    const m = raw.match(/^([rwRW]?)(0x[0-9a-fA-F]+|\d+)$/);
+    if (!m) throw new Error('Cannot read access "' + raw + '". Use numbers such as 0, 4, w8 or 0x40.');
+    const address = Number(m[2]);
+    if (address > 65535) throw new Error('Address ' + raw + ' is above 65535 (16-bit address space).');
+    out.push({ address, type: m[1].toLowerCase() === 'w' ? 'write' : 'read' });
+  }
+  if (!out.length) throw new Error('Enter at least one address.');
+  if (out.length > 1000) throw new Error('At most 1000 accesses.');
+  return out;
+}
+
+
+/* ===== src/demo.js ===== */
+
+
+
+
+
+/* Professor demonstration experiments. Pure functions: every number they return is computed
+   by the interpreter, pipeline model or cache simulator, so the UI and the tests share them. */
+
+const DEMO_ISA_WORKLOADS = ['FIB', 'MAXARR', 'SUMN'];
+const DEMO_PIPE = { arch: 'rv', branchPenalty: 2, branchPolicy: 'every' };
+
+function runProgram(arch, mem, lines) {
+  const s = mk(arch, { mem }, lines);
+  while (!s.halt) step(s);
+  return s;
+}
+function workloadInput(id, n) {
+  const w = WL.find((x) => x.id === id);
+  const mem = { ...w.mem };
+  let ex = w.ex;
+  if (id === 'FIB' && n != null) {
+    mem[0] = n;
+    mem[11] = n;
+    let a = 0,
+      b = 1;
+    for (let i = 0; i < n; i++) [a, b] = [b, a + b];
+    ex = a;
+  }
+  if (id === 'SUMN' && n != null) {
+    mem[0] = n;
+    ex = (n * (n + 1)) / 2;
+  }
+  return { w, mem, ex };
+}
+const opHistogram = (s) => {
+  const h = {};
+  for (const t of s.tr) {
+    const op = t.t.replace(/^[A-Za-z_]\w*:\s*/, '').split(/\s+/)[0].toLowerCase();
+    h[op] = (h[op] || 0) + 1;
+  }
+  return h;
+};
+function demoIsaComparison(workloadId = 'FIB', n = null, cycleCosts = null) {
+  if (!DEMO_ISA_WORKLOADS.includes(workloadId)) throw new Error('Unknown demo workload ' + workloadId);
+  if (n != null) {
+    const lim = workloadId === 'FIB' ? [0, 15] : [1, 30];
+    if (!Number.isInteger(n) || n < lim[0] || n > lim[1]) throw new Error('n must be an integer from ' + lim[0] + ' to ' + lim[1]);
+  }
+  const { w, mem, ex } = workloadInput(workloadId, n);
+  const out = { workload: workloadId, name: w.n, n: n ?? mem[0], expected: ex, runs: {} };
+  for (const arch of ['mips', 'rv']) {
+    const lines = PROG[w.p][arch];
+    const s = runProgram(arch, mem, lines);
+    const costs = cycleCosts?.[arch] || MODELS[arch].cyc;
+    const multiCycles = Object.entries(s.c.cls).reduce((a, [k, v]) => a + v * (costs[k] || 0), 0);
+    const pipe = explainPipeline(s.tr, { ...DEMO_PIPE, arch, forwarding: true });
+    const regs = Object.entries(s.r)
+      .filter(([, v]) => v !== 0)
+      .map(([k, v]) => ({ reg: k, label: regLabel(arch, arch === 'rv' ? k : k), value: v | 0 }));
+    out.runs[arch] = {
+      arch,
+      name: MODELS[arch].name,
+      source: lines,
+      program: s.p,
+      trace: s.tr,
+      staticCount: s.p.length,
+      dynamic: s.c.dyn,
+      classes: { ...s.c.cls },
+      costs: { ...costs },
+      multiCycles,
+      multiCPI: s.c.dyn ? multiCycles / s.c.dyn : 0,
+      pipeCycles: pipe.cycles,
+      pipeCPI: pipe.cpi,
+      pipeStalls: pipe.dataStalls,
+      pipeBranchBubbles: pipe.branchBubbles,
+      pipeMismatches: pipe.operandMismatches.length,
+      histogram: opHistogram(s),
+      registers: regs,
+      output: s.m[3],
+      ok: s.m[3] === ex && !s.err,
+      err: s.err,
+      codeBytes: s.p.length * 4,
+    };
+  }
+  /* representative encodings: first instruction of each kind in each program */
+  const kinds = [
+    ['Load word', /^lw$/],
+    ['Add immediate', /^addiu?$/],
+    ['Register add', /^addu?$/],
+    ['Conditional branch', /^(beq|bne|blt|bge)$/],
+    ['Store word', /^sw$/],
+  ];
+  out.encodings = kinds.map(([label, re]) => {
+    const row = { label };
+    for (const arch of ['mips', 'rv']) {
+      const p = out.runs[arch].program;
+      const i = p.findIndex((ins) => re.test(ins.t.replace(/^[A-Za-z_]\w*:\s*/, '').split(/\s+/)[0].toLowerCase()));
+      if (i < 0) {
+        row[arch] = null;
+        continue;
+      }
+      const e = encodeInstruction(arch, p[i], i);
+      row[arch] = { index: i, text: p[i].t.replace(/^[A-Za-z_]\w*:\s*/, ''), hex: e.hex, fields: encodingFields(arch, p[i], i) };
+    }
+    return row;
+  });
+  const m = out.runs.mips,
+    r = out.runs.rv;
+  const onlyIn = (a, b) => Object.keys(a.histogram).filter((k) => !(k in b.histogram) && !['addu', 'subu', 'addiu', 'add', 'sub', 'addi'].includes(k));
+  out.differences = {
+    dynamicDelta: m.dynamic - r.dynamic,
+    staticDelta: m.staticCount - r.staticCount,
+    mipsOnly: onlyIn(m, r).map((k) => [k, m.histogram[k]]),
+    rvOnly: onlyIn(r, m).map((k) => [k, r.histogram[k]]),
+  };
+  return out;
+}
+
+/* Experiment 2: the same program with forwarding off (run A) and on (run B). */
+const DEMO_FWD_PROGRAM = {
+  rv: ['lw t0,0(a0)', 'add t1,t0,t0', 'sub t2,t1,t0', 'lw t3,4(a0)', 'add t4,t3,t2', 'sw t4,12(a0)'],
+  mem: { 0: 7, 1: 5 },
+  expected: 12,
+};
+function demoForwarding(branchPenalty = 2) {
+  const s = runProgram('rv', DEMO_FWD_PROGRAM.mem, DEMO_FWD_PROGRAM.rv);
+  const opts = { arch: 'rv', branchPenalty, branchPolicy: 'every', clockMHz: 100 };
+  const A = explainPipeline(s.tr, { ...opts, forwarding: false });
+  const B = explainPipeline(s.tr, { ...opts, forwarding: true });
+  return {
+    program: DEMO_FWD_PROGRAM.rv,
+    output: s.m[3],
+    ok: s.m[3] === DEMO_FWD_PROGRAM.expected,
+    trace: s.tr,
+    A,
+    B,
+    saved: A.cycles - B.cycles,
+    speedup: A.cycles / B.cycles,
+    sameRegisters: JSON.stringify(A.finalRegs) === JSON.stringify(B.finalRegs),
+  };
+}
+
+/* Experiment 3: identical access sequence, three cache configurations. */
+const DEMO_CACHE_WORKLOADS = {
+  interleaved: {
+    name: 'Two arrays read in step: A[i] then B[i] (B starts 64 bytes after A), two passes',
+    make: () => {
+      const out = [];
+      for (let p = 0; p < 2; p++)
+        for (let i = 0; i < 8; i++) out.push({ address: 4 * i, type: 'read' }, { address: 64 + 4 * i, type: 'read' });
+      return out;
+    },
+  },
+  scan: {
+    name: 'One 24-word array summed twice (sequential scan, then reuse)',
+    make: () => {
+      const out = [];
+      for (let p = 0; p < 2; p++) for (let i = 0; i < 24; i++) out.push({ address: 4 * i, type: 'read' });
+      return out;
+    },
+  },
+};
+const DEMO_CACHE_CONFIGS = [
+  { cacheSize: 64, blockSize: 16, associativity: 1, policy: 'LRU', writePolicy: 'write-back', writeAllocate: true, hitTime: 1, missPenalty: 20 },
+  { cacheSize: 64, blockSize: 16, associativity: 2, policy: 'LRU', writePolicy: 'write-back', writeAllocate: true, hitTime: 1, missPenalty: 20 },
+  { cacheSize: 128, blockSize: 16, associativity: 1, policy: 'LRU', writePolicy: 'write-back', writeAllocate: true, hitTime: 1, missPenalty: 20 },
+];
+function demoCache(workload = 'interleaved') {
+  const W = DEMO_CACHE_WORKLOADS[workload];
+  if (!W) throw new Error('Unknown cache demo workload ' + workload);
+  const accesses = W.make();
+  return { workload, name: W.name, accesses, configs: DEMO_CACHE_CONFIGS.map((c) => ({ ...c })), results: DEMO_CACHE_CONFIGS.map((c) => simulateCache(accesses, c)) };
+}
+
+
+/* ===== src/custom-isa.js ===== */
+
+/* Custom teaching ISA: a deliberately constrained, executable seven-opcode instruction set.
+   Kept in its own module so it can be unit-tested without a DOM. */
+const CUSTOM_OPS = { MOVI: 0, ADD: 1, SUB: 2, LOAD: 3, STORE: 4, JNZ: 5, HALT: 6 };
+const CUSTOM_EXAMPLE = 'MOVI r0,7\nMOVI r1,5\nADD r0,r1\nSTORE r0,3\nHALT';
+const CUSTOM_MEANING = {
+  MOVI: (a, b, imm) => `r${a} ← ${imm}`,
+  ADD: (a, b) => `r${a} ← r${a} + r${b}`,
+  SUB: (a, b) => `r${a} ← r${a} − r${b}`,
+  LOAD: (a, b, imm) => `r${a} ← MEM[${imm}]`,
+  STORE: (a, b, imm) => `MEM[${imm}] ← r${a}`,
+  JNZ: (a, b, imm) => `if r${a} ≠ 0 then PC ← ${imm}`,
+  HALT: () => 'stop',
+};
+function customFormat(regCount = 4, width = 16) {
+  if (![2, 4, 8, 16].includes(Number(regCount))) throw Error('Register count must be 2, 4, 8 or 16');
+  if (!Number.isInteger(Number(width)) || width < 8 || width > 32) throw Error('Instruction width must be 8 to 32 bits');
+  const regBits = Math.ceil(Math.log2(regCount)),
+    immBits = width - 3 - 2 * regBits;
+  if (immBits < 4)
+    throw Error(
+      `A ${width}-bit instruction with ${regCount} registers leaves only ${immBits} immediate bit(s) (3 opcode + 2 × ${regBits} register bits); at least 4 are needed to address the 16 memory cells. Use a wider instruction or fewer registers.`
+    );
+  return { regBits, immBits, opBits: 3 };
+}
+function customAssemble(src, regCount = 4, width = 16) {
+  const { regBits, immBits } = customFormat(regCount, width);
+  const lines = [],
+    labels = Object.create(null);
+  for (const [idx, raw] of String(src).split(/\r?\n/).entries()) {
+    let l = raw.replace(/(?:#|;|\/\/).*$/, '').trim();
+    if (!l) continue;
+    while (true) {
+      const m = l.match(/^([A-Za-z_]\w*):\s*(.*)$/);
+      if (!m) break;
+      if (hasOwn(labels, m[1])) throw Error('Line ' + (idx + 1) + ': duplicate label');
+      labels[m[1]] = lines.length;
+      l = m[2].trim();
+      if (!l) break;
+    }
+    if (l) lines.push({ l, line: idx + 1 });
+  }
+  if (!lines.length) throw Error('Enter a program');
+  if (lines.length > 128) throw Error('Maximum 128 instructions');
+  return lines.map(({ l, line }, pc) => {
+    const m = l.match(/^([A-Za-z]+)\s*(.*)$/);
+    if (!m) throw Error('Line ' + line + ': invalid syntax');
+    const op = m[1].toUpperCase(),
+      args = m[2] ? m[2].split(',').map((x) => x.trim()) : [];
+    if (!hasOwn(CUSTOM_OPS, op)) throw Error('Line ' + line + ': unknown opcode ' + op);
+    const count = op === 'HALT' ? 0 : ['ADD', 'SUB', 'MOVI', 'LOAD', 'STORE', 'JNZ'].includes(op) ? 2 : -1;
+    if (args.length !== count || args.some((a) => !a))
+      throw Error('Line ' + line + ': incorrect operands for ' + op);
+    let a = 0,
+      b = 0,
+      imm = 0;
+    const reg = (x) => {
+      const m = x.match(/^r(\d+)$/i);
+      if (!m || +m[1] >= regCount) throw Error('Line ' + line + ': invalid register ' + x);
+      return +m[1];
+    };
+    if (count) {
+      a = reg(args[0]);
+      if (op === 'ADD' || op === 'SUB') b = reg(args[1]);
+      else {
+        if (op === 'JNZ' && /^[A-Za-z_]\w*$/.test(args[1]) && !hasOwn(labels, args[1]))
+          throw Error('Line ' + line + ': undefined label ' + args[1]);
+        if (!(op === 'JNZ' && hasOwn(labels, args[1])) && !/^-?\d+$/.test(args[1]))
+          throw Error('Line ' + line + ': "' + args[1] + '" is not a whole number' + (op === 'JNZ' ? ' or a label' : ''));
+        imm = op === 'JNZ' && hasOwn(labels, args[1]) ? labels[args[1]] : Number(args[1]);
+        if (!Number.isSafeInteger(imm) || imm < -(2 ** (immBits - 1)) || imm >= 2 ** (immBits - 1))
+          throw Error('Line ' + line + ': immediate/target outside ' + immBits + '-bit signed range');
+        if (['LOAD', 'STORE'].includes(op) && (imm < 0 || imm >= 16))
+          throw Error('Line ' + line + ': memory cell must be 0–15');
+        if (op === 'JNZ' && (imm < 0 || imm >= lines.length))
+          throw Error('Line ' + line + ': branch target outside program');
+      }
+    }
+    const bits =
+      CUSTOM_OPS[op].toString(2).padStart(3, '0') +
+      a.toString(2).padStart(regBits, '0') +
+      b.toString(2).padStart(regBits, '0') +
+      (imm & (2 ** immBits - 1)).toString(2).padStart(immBits, '0');
+    return { op, args, a, b, imm, bits, pc, line, fields: [bits.slice(0, 3), bits.slice(3, 3 + regBits), bits.slice(3 + regBits, 3 + 2 * regBits), bits.slice(3 + 2 * regBits)], meaning: CUSTOM_MEANING[op](a, b, imm) };
+  });
+}
+function customRun(src, regCount = 4, width = 16, instructionWidth = 16) {
+  const p = customAssemble(src, regCount, instructionWidth),
+    mask = width === 32 ? 0xffffffff : 2 ** width - 1,
+    sign = width === 32 ? 0x80000000 : 2 ** (width - 1),
+    norm = (v) => {
+      const u = (v & mask) >>> 0;
+      return u >= sign ? u - 2 * sign : u;
+    };
+  const r = Array(regCount).fill(0),
+    mem = Array(16).fill(0),
+    trace = [];
+  let pc = 0,
+    halt = false;
+  for (let i = 0; i < 1000 && !halt; i++) {
+    if (pc < 0 || pc >= p.length) throw Error('PC left the program without HALT');
+    const ins = p[pc],
+      before = pc;
+    pc++;
+    const { op, a, b, imm } = ins;
+    switch (op) {
+      case 'MOVI':
+        r[a] = norm(imm);
+        break;
+      case 'ADD':
+        r[a] = norm(r[a] + r[b]);
+        break;
+      case 'SUB':
+        r[a] = norm(r[a] - r[b]);
+        break;
+      case 'LOAD':
+        r[a] = mem[imm];
+        break;
+      case 'STORE':
+        mem[imm] = r[a];
+        break;
+      case 'JNZ':
+        if (r[a] !== 0) pc = imm;
+        break;
+      case 'HALT':
+        halt = true;
+        break;
+    }
+    trace.push({
+      pc: before,
+      assembly: op + ' ' + ins.args.join(','),
+      bits: ins.bits,
+      registers: r.slice(),
+      memory: mem.slice(),
+      nextPC: pc,
+    });
+  }
+  if (!halt) throw Error('Execution limit (1000 instructions) reached');
+  return { p, r, mem, trace, cycles: trace.length, wordWidth: width, regCount };
+}
+
+
+/* ===== src/selftest.js ===== */
+/* In-browser self-test. Executed by browser-selftest.html on the machine you will present from
+   (Firefox, Safari, Chrome, ...). It exercises the same engine code that processor-lab.html bundles:
+   JavaScript features the app uses, every workload on every model, the pipeline (both branch
+   policies), the cache, the custom ISA and a few encoding vectors. It cannot judge visual layout. */
+
+
+
+
+
+
+
+
+
+function runSelfTests() {
+  const out = [];
+  const t = (group, name, fn) => {
+    try {
+      const detail = fn();
+      out.push({ group, name, ok: true, detail: detail === undefined ? '' : String(detail) });
+    } catch (e) {
+      out.push({ group, name, ok: false, detail: String((e && e.message) || e) });
+    }
+  };
+  const eq = (a, b, what) => {
+    if (a !== b) throw new Error((what || 'value') + ': expected ' + b + ', got ' + a);
+  };
+  const syntax = (src) => {
+    new Function(src);
+    return 'supported';
+  };
+
+  // 1. Language features the app relies on (a failure here means the browser is too old).
+  t('JavaScript features', 'optional chaining ?.', () => syntax('const o={}; return o?.a?.b'));
+  t('JavaScript features', 'nullish coalescing ??', () => syntax('return null ?? 1'));
+  t(
+    'JavaScript features',
+    'Array flat / flatMap',
+    () => eq([[1], [2]].flat().length, 2) || eq([1].flatMap((x) => [x, x]).length, 2) || 'supported'
+  );
+  t(
+    'JavaScript features',
+    'Object.fromEntries',
+    () => eq(Object.fromEntries([['a', 1]]).a, 1) || 'supported'
+  );
+  t('JavaScript features', 'Blob + object URLs (exports)', () => {
+    const u = URL.createObjectURL(new Blob(['x']));
+    URL.revokeObjectURL(u);
+    return 'supported';
+  });
+  t('JavaScript features', 'matchMedia (theme, reduced motion)', () => {
+    if (typeof matchMedia !== 'function') throw new Error('missing');
+    return 'reduced-motion=' + matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
+  t('JavaScript features', 'CSS :focus-visible', () => {
+    if (!(window.CSS && CSS.supports && CSS.supports('selector(:focus-visible)')))
+      throw new Error('focus rings will not show on this browser');
+    return 'supported';
+  });
+  t('JavaScript features', 'window.print available (PDF export)', () => {
+    if (typeof window.print !== 'function') throw new Error('missing');
+    return 'present';
+  });
+
+  // 2. Every workload on every model.
+  for (const w of WL)
+    for (const id of Object.keys(MODELS)) {
+      t('Workloads on all models', w.id + ' on ' + id, () => {
+        const r = run(id, w);
+        if (!r.ok) throw new Error('got ' + r.got + (r.err ? ' (' + r.err + ')' : ''));
+        eq(r.got, w.ex, 'result');
+        return r.got;
+      });
+    }
+
+  // 3. Pipeline: hand-calculated numbers.
+  const seq = [
+    { t: 'beq t1,t2,x', taken: false },
+    'addi t3,t3,1',
+    { t: 'bne t4,t5,x', taken: true },
+    'addi t6,t6,1',
+  ];
+  t('Pipeline', 'fill/drain: 4 independent instructions = 8 cycles', () =>
+    eq(simulatePipeline(seq, { arch: 'rv', branchPenalty: 0 }).cycles, 8, 'cycles')
+  );
+  t('Pipeline', 'penalty 3, every branch = 14 cycles', () =>
+    eq(simulatePipeline(seq, { arch: 'rv', branchPenalty: 3, branchPolicy: 'every' }).cycles, 14, 'cycles')
+  );
+  t('Pipeline', 'penalty 3, taken only = 11 cycles', () =>
+    eq(simulatePipeline(seq, { arch: 'rv', branchPenalty: 3, branchPolicy: 'taken' }).cycles, 11, 'cycles')
+  );
+  t('Pipeline', 'load-use costs one bubble with forwarding', () =>
+    eq(
+      simulatePipeline(['lw t0,0(a0)', 'add t1,t0,t2'], { arch: 'rv', forwarding: true, branchPenalty: 0 })
+        .dataStalls,
+      1,
+      'stalls'
+    )
+  );
+  t('Pipeline', 'unknown opcode is rejected loudly', () => {
+    try {
+      simulatePipeline(['mul t0,t1,t2'], { arch: 'rv' });
+    } catch (e) {
+      return 'rejected';
+    }
+    throw new Error('accepted an unsupported opcode');
+  });
+  t('Pipeline', 'every workload schedules on RV32I and MIPS32', () => {
+    for (const arch of ['rv', 'mips'])
+      for (const w of WL) {
+        const s = mk(arch, w);
+        let n = 0;
+        while (!s.halt && n++ < 5000) step(s);
+        simulatePipeline(traceToPipelineInput(s.tr), { arch, branchPolicy: 'taken' });
+      }
+    return 'ok';
+  });
+
+  // 4. Cache.
+  t('Cache', 'hits/misses/AMAT hand calculation', () => {
+    const c = simulateDirectMappedCache([0, 4, 16, 0], {
+      cacheSize: 64,
+      blockSize: 16,
+      hitTime: 1,
+      missPenalty: 20,
+    });
+    eq(c.hits, 2, 'hits');
+    eq(c.misses, 2, 'misses');
+    eq(c.amat, 11, 'AMAT');
+  });
+
+  // 5. Encodings and custom ISA.
+  t('Encodings', 'MIPS32 addu $t2,$t0,$t1 = 0x01095021', () =>
+    eq(encodeInstruction('mips', asm(MODELS.mips, ['addu $t2,$t0,$t1'])[0], 0).hex, '0x01095021')
+  );
+  t('Encodings', 'RV32I lw t0,0(a0) = 0x00052283', () =>
+    eq(encodeInstruction('rv', asm(MODELS.rv, ['lw t0,0(a0)'])[0], 0).hex, '0x00052283')
+  );
+  t('Encodings', 'RV32I lui t0,1 = 0x000012B7', () =>
+    eq(encodeInstruction('rv', asm(MODELS.rv, ['lui t0,1'])[0], 0).hex, '0x000012B7')
+  );
+  t('Custom ISA', 'addition program stores 12 in cell 3', () =>
+    eq(customRun(CUSTOM_EXAMPLE, 4, 32).mem[3], 12, 'memory[3]')
+  );
+  t('Custom ISA', '8-bit data wraps 127 + 1 to -128', () =>
+    eq(customRun('MOVI r0,127\nMOVI r1,1\nADD r0,r1\nSTORE r0,3\nHALT', 4, 8, 24).mem[3], -128, 'memory[3]')
+  );
+  t('4.0 pipeline', 'forwarding demo: 18 cycles off, 12 on, no stale operands', () => {
+    const r = demoForwarding();
+    eq(r.A.cycles, 18, 'off');
+    eq(r.B.cycles, 12, 'on');
+    eq(r.A.operandMismatches.length + r.B.operandMismatches.length, 0, 'mismatches');
+  });
+  t('4.0 pipeline', 'every workload: delivered operands equal interpreter values', () => {
+    let n = 0;
+    for (const arch of ['rv', 'mips'])
+      for (const w of WL) {
+        const s = mk(arch, w);
+        while (!s.halt) step(s);
+        for (const forwarding of [true, false]) {
+          const e = explainPipeline(s.tr, { arch, forwarding });
+          if (e.operandMismatches.length) throw new Error(arch + ' ' + w.id);
+          n += e.operands.length;
+        }
+      }
+    return n + ' operands checked';
+  });
+  t('4.0 datapath', 'MIPS addu $t2,$t0,$t1 shows 7 + 5 = 12', () => {
+    const s = mk('mips', WL.find((w) => w.id === 'ADD'));
+    while (!s.halt) step(s);
+    const d = describeInstruction('mips', s.tr[2], s.p[2]);
+    eq(d.alu.result, 12, 'ALU');
+    eq(d.aluChecked, true, 'cross-check');
+  });
+  t('4.0 cache', 'LRU keeps the reused block (5 hits), FIFO does not (3 hits)', () => {
+    const seq = parseAccessList('0 32 0 64 0 32 0 64 0 32 0 64');
+    eq(simulateCache(seq, { cacheSize: 64, blockSize: 16, associativity: 2, policy: 'LRU' }).hits, 5, 'LRU');
+    eq(simulateCache(seq, { cacheSize: 64, blockSize: 16, associativity: 2, policy: 'FIFO' }).hits, 3, 'FIFO');
+  });
+  t('4.0 cache', 'interleaved arrays: 0 / 28 / 28 hits', () =>
+    eq(demoCache('interleaved').results.map((r) => r.hits).join('/'), '0/28/28')
+  );
+  t('4.0 demo', 'MIPS32 runs 8 more instructions than RV32I on Fibonacci(7)', () =>
+    eq(demoIsaComparison('FIB', 7).differences.dynamicDelta, 8)
+  );
+  t('Helpers', 'HTML escaping', () => eq(esc('<b a="1">'), '&lt;b a=&quot;1&quot;&gt;'));
+  t('Helpers', 'hasOwn helper', () => {
+    eq(hasOwn({ a: 1 }, 'a'), true);
+    eq(hasOwn({}, 'toString'), false);
+  });
+  return out;
+}
+
+(function(){
+ var rows=runSelfTests(),pass=rows.filter(function(r){return r.ok}).length,fail=rows.length-pass;
+ var s=document.getElementById('summary');s.className='sum '+(fail?'bad':'ok');
+ s.textContent=fail?('FAIL — '+fail+' of '+rows.length+' checks failed. Do not present from this browser until fixed.'):('PASS — all '+rows.length+' checks passed.');
+ document.getElementById('ua').textContent='Browser: '+navigator.userAgent;
+ var tb=document.querySelector('#rows tbody'),lines=['Processor Lab self-test','Browser: '+navigator.userAgent,'Result: '+pass+'/'+rows.length+' passed',''];
+ rows.forEach(function(r){var tr=document.createElement('tr');[r.ok?'PASS':'FAIL',r.group,r.name,r.detail].forEach(function(v,i){var td=document.createElement('td');td.textContent=v;if(i===0)td.className=r.ok?'p':'f';tr.appendChild(td)});tb.appendChild(tr);if(!r.ok)lines.push('FAIL ['+r.group+'] '+r.name+' — '+r.detail)});
+ if(!fail)lines.push('No failures.');
+ var ta=document.getElementById('report');ta.value=lines.join('\n');
+ document.getElementById('copy').onclick=function(){ta.select();try{document.execCommand('copy')}catch(e){}};
+})();
+</script></body></html>

@@ -1,0 +1,2 @@
+model,workload,static,dynamic,cycles,cpi,pipeline_cycles,pipeline_cpi,time_ns,energy_nj,reads,writes,code_bytes,cache_hits,cache_misses,cache_miss_rate,amat_cycles,ok
+rv,ADD,1,1,5,5.00,5,5.000,50,20.00,0,0,4,0,1,1.00,21.00,true

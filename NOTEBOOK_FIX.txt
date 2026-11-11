@@ -1,0 +1,21 @@
+NOTEBOOK BUTTON UPDATE
+
+Open processor-lab.html in your browser.
+
+The notebook button now explains exactly which evidence is missing. Click
+"Review missing evidence" to move to the question or experiment step to finish.
+After all three checks pass, click "Record evidence in notebook".
+
+For the screenshot case (A = 5, B = 3):
+1. Select B = -2, because 3 - 5 = -2.
+2. Execute the instruction.
+3. Choose "The new value of B is <= 0" as the cause.
+4. Record the evidence.
+
+Notebook entries use the existing browser storage. Open the same file in the
+same browser to revisit them. Export notebook JSON to keep a separate copy.
+
+Validation: build succeeded; 104 automated tests passed, 2 checks skipped
+because optional GNU tools are unavailable. Includes 4 notebook controller
+regression tests for correction, recording, restore, duplicate prevention,
+resetting a case, and the other missions. No live-browser test was run.

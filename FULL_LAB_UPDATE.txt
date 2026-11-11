@@ -1,0 +1,30 @@
+PROCESSOR LAB QUEST - FULL LAB STUDIO UPDATE
+
+Open processor-lab.html, then choose Full Lab.
+
+WHAT CHANGED
+A fresh learning-studio design with a processor illustration, section icons,
+spacious lesson cards, refined controls, clearer tables, and light/dark colors.
+
+Find sections with the library search. Try pipeline, cache, ISA, or reports.
+Use the section dropdown or Previous/Next section buttons to browse.
+Each section has a brief introduction and a suggested place to start.
+The On this page menu follows your selected reading detail.
+On smaller screens the library starts collapsed; expand Explore the lab to browse.
+
+WHAT WAS PRESERVED
+All 11 sections, original lesson information, examples, simulator controls,
+calculations, models, program execution, exports, and report operations.
+All 16 source modules are byte-for-byte unchanged from the supplied project.
+The notebook correction and saved notebook behavior remain included.
+No external fonts, services, accounts, or network connection are required.
+
+VALIDATION
+Build completed. Automated controller, simulator, and preservation tests passed.
+Two optional GNU-tool crosschecks are skipped because those tools are unavailable.
+The local-file browser preview was blocked by the preview browser's policy, so
+this release was not visually verified in a live browser.
+
+REBUILD
+With Node.js and npm installed: npm run verify
+Or: node build.js, then run the test command listed in package.json.

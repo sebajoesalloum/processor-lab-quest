@@ -1,0 +1,13 @@
+{
+  "name": "processor-lab",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node --test test.js tests/regression.test.js tests/randomized.test.js tests/fib_edge.test.js tests/crosscheck.test.js tests/pipeline.test.js tests/v4.test.js tests/docs.test.js tests/notebook.test.js tests/full-lab-preservation.test.js tests/full-lab-navigation.test.js",
+    "verify": "npm run build && npm test",
+    "format": "npx prettier --write \"src/*.js\"",
+    "crosscheck": "node tools/crosscheck.mjs"
+  }
+}

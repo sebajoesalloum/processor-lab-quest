@@ -1,0 +1,17 @@
+PROCESSOR LAB QUEST
+
+Open processor-lab.html in your browser to use the complete offline simulator.
+No installation, login, server, or internet connection is needed.
+
+The original introduction video appears first. Use Pause, Replay, Sound on,
+or Skip. It can also be replayed from the footer later.
+
+Mission map: choose a topic or one of the three playable learning missions.
+Full Lab: open any of the eleven original sections and select All information.
+My notebook: review and export the evidence collected in your missions.
+
+The original academic content, examples, models, settings, formulas, quizzes,
+glossary, reports, and simulation source are preserved. The changes are in
+presentation, navigation, and the optional learning experience around the lab.
+
+For editing and rebuilding, see UI_REDESIGN.md.

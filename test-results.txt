@@ -1,0 +1,626 @@
+
+> processor-lab@4.0.0 test
+> node --test test.js tests/regression.test.js tests/randomized.test.js tests/fib_edge.test.js tests/crosscheck.test.js tests/pipeline.test.js tests/v4.test.js tests/docs.test.js
+
+TAP version 13
+# Subtest: every benchmark produces its expected output on every model
+ok 1 - every benchmark produces its expected output on every model
+  ---
+  duration_ms: 9.079601
+  type: 'test'
+  ...
+# Subtest: RV32I examples use native branches and U-type constant/address idioms
+ok 2 - RV32I examples use native branches and U-type constant/address idioms
+  ---
+  duration_ms: 0.20453
+  type: 'test'
+  ...
+# Subtest: five independent instructions have the hand-calculated fill/drain CPI
+ok 3 - five independent instructions have the hand-calculated fill/drain CPI
+  ---
+  duration_ms: 0.844703
+  type: 'test'
+  ...
+# Subtest: forwarding removes ALU RAW stalls but retains one load-use bubble
+ok 4 - forwarding removes ALU RAW stalls but retains one load-use bubble
+  ---
+  duration_ms: 0.278553
+  type: 'test'
+  ...
+# Subtest: branch penalty is an explicit additive assumption
+ok 5 - branch penalty is an explicit additive assumption
+  ---
+  duration_ms: 0.140458
+  type: 'test'
+  ...
+# Subtest: direct-mapped cache hit, miss, and AMAT math matches hand calculation
+ok 6 - direct-mapped cache hit, miss, and AMAT math matches hand calculation
+  ---
+  duration_ms: 0.762978
+  type: 'test'
+  ...
+# Subtest: direct-mapped cache rejects invalid non-power-of-two geometry
+ok 7 - direct-mapped cache rejects invalid non-power-of-two geometry
+  ---
+  duration_ms: 0.367455
+  type: 'test'
+  ...
+# Subtest: SUBLEQ looped array workload uses its explicit indirect-address extension
+ok 8 - SUBLEQ looped array workload uses its explicit indirect-address extension
+  ---
+  duration_ms: 0.134239
+  type: 'test'
+  ...
+# Subtest: field diagrams account for all 32 bits and encodings match known words
+ok 9 - field diagrams account for all 32 bits and encodings match known words
+  ---
+  duration_ms: 0.846998
+  type: 'test'
+  ...
+# Subtest: RV32I B-type and AUIPC encodings preserve split immediate fields
+ok 10 - RV32I B-type and AUIPC encodings preserve split immediate fields
+  ---
+  duration_ms: 0.417063
+  type: 'test'
+  ...
+# Subtest: engine snapshots restore trace and memory state
+ok 11 - engine snapshots restore trace and memory state
+  ---
+  duration_ms: 0.282302
+  type: 'test'
+  ...
+# Subtest: JSON snapshot and CSV export match golden files
+ok 12 - JSON snapshot and CSV export match golden files
+  ---
+  duration_ms: 8.602056
+  type: 'test'
+  ...
+# Subtest: in-browser self-test checks (engine, pipeline, cache, encodings, custom ISA) all pass under Node
+ok 13 - in-browser self-test checks (engine, pipeline, cache, encodings, custom ISA) all pass under Node
+  ---
+  duration_ms: 24.187638
+  type: 'test'
+  ...
+# Subtest: encodings match GNU as for every workload and edge-case program
+ok 14 - encodings match GNU as for every workload and edge-case program
+  ---
+  duration_ms: 1214.195435
+  type: 'test'
+  ...
+# Subtest: out-of-range RV32I branches: project rejects exactly where GNU cannot emit one B-type word
+ok 15 - out-of-range RV32I branches: project rejects exactly where GNU cannot emit one B-type word
+  ---
+  duration_ms: 25.024007
+  type: 'test'
+  ...
+# Subtest: every "<N> Chromium … checks" claim equals the count in browser-results.txt
+ok 16 - every "<N> Chromium … checks" claim equals the count in browser-results.txt
+  ---
+  duration_ms: 6.306794
+  type: 'test'
+  ...
+# Subtest: every "<N> Node tests" claim equals the count in test-results.txt
+ok 17 - every "<N> Node tests" claim equals the count in test-results.txt
+  ---
+  duration_ms: 2.075703
+  type: 'test'
+  ...
+# Subtest: version is the same in package.json, the engine, the README title and the newest changelog entry
+ok 18 - version is the same in package.json, the engine, the README title and the newest changelog entry
+  ---
+  duration_ms: 1.963992
+  type: 'test'
+  ...
+# Subtest: docs do not claim Firefox or Safari were verified by automated tests
+ok 19 - docs do not claim Firefox or Safari were verified by automated tests
+  ---
+  duration_ms: 2.534694
+  type: 'test'
+  ...
+# Subtest: hand-checked reference values: F(0)=0, F(1)=1, F(2)=1, F(10)=55, F(15)=610
+ok 20 - hand-checked reference values: F(0)=0, F(1)=1, F(2)=1, F(10)=55, F(15)=610
+  ---
+  duration_ms: 1.119858
+  type: 'test'
+  ...
+# Subtest: FIB(0) returns 0 on all four models (regression for the old "returns 1" bug)
+ok 21 - FIB(0) returns 0 on all four models (regression for the old "returns 1" bug)
+  ---
+  duration_ms: 3.16307
+  type: 'test'
+  ...
+# Subtest: FIB boundary and full range F(0)..F(15) on all four models
+ok 22 - FIB boundary and full range F(0)..F(15) on all four models
+  ---
+  duration_ms: 25.988932
+  type: 'test'
+  ...
+# Subtest: the shipped default FIB workload (n=7) still produces 13 on all models
+ok 23 - the shipped default FIB workload (n=7) still produces 13 on all models
+  ---
+  duration_ms: 0.363794
+  type: 'test'
+  ...
+# Subtest: FIB(0) executes no loop body: loop-free path is shorter than FIB(1) on every model
+ok 24 - FIB(0) executes no loop body: loop-free path is shorter than FIB(1) on every model
+  ---
+  duration_ms: 3.754026
+  type: 'test'
+  ...
+# Subtest: unknown RV32I opcode throws instead of silently having no dependencies
+ok 25 - unknown RV32I opcode throws instead of silently having no dependencies
+  ---
+  duration_ms: 1.445339
+  type: 'test'
+  ...
+# Subtest: MIPS-only decoder rejects opcodes the MIPS assembler also rejects (auipc, lui, blt, bge)
+ok 26 - MIPS-only decoder rejects opcodes the MIPS assembler also rejects (auipc, lui, blt, bge)
+  ---
+  duration_ms: 0.223276
+  type: 'test'
+  ...
+# Subtest: error message names the opcode and the instruction
+ok 27 - error message names the opcode and the instruction
+  ---
+  duration_ms: 0.172302
+  type: 'test'
+  ...
+# Subtest: unsupported ISAs (x86, SUBLEQ) are refused rather than given CPI 1
+ok 28 - unsupported ISAs (x86, SUBLEQ) are refused rather than given CPI 1
+  ---
+  duration_ms: 0.697395
+  type: 'test'
+  ...
+# Subtest: wrong operand counts and unparseable lines throw
+ok 29 - wrong operand counts and unparseable lines throw
+  ---
+  duration_ms: 0.16909
+  type: 'test'
+  ...
+# Subtest: decoder opcode tables match what each assembler accepts (no drift)
+ok 30 - decoder opcode tables match what each assembler accepts (no drift)
+  ---
+  duration_ms: 2.935652
+  type: 'test'
+  ...
+# Subtest: every dynamic instruction of all 12 workloads is understood by the decoder (both ISAs, both policies)
+ok 31 - every dynamic instruction of all 12 workloads is understood by the decoder (both ISAs, both policies)
+  ---
+  duration_ms: 7.482025
+  type: 'test'
+  ...
+# Subtest: hand-calculated: penalty 0 → 4 instructions fill/drain in 8 cycles
+ok 32 - hand-calculated: penalty 0 → 4 instructions fill/drain in 8 cycles
+  ---
+  duration_ms: 0.177839
+  type: 'test'
+  ...
+# Subtest: hand-calculated: penalty 3, EVERY branch → IF at 1,5,6,10 → 14 cycles, 6 bubbles
+ok 33 - hand-calculated: penalty 3, EVERY branch → IF at 1,5,6,10 → 14 cycles, 6 bubbles
+  ---
+  duration_ms: 0.331053
+  type: 'test'
+  ...
+# Subtest: hand-calculated: penalty 3, TAKEN only → IF at 1,2,3,7 → 11 cycles, 3 bubbles
+ok 34 - hand-calculated: penalty 3, TAKEN only → IF at 1,2,3,7 → 11 cycles, 3 bubbles
+  ---
+  duration_ms: 0.409864
+  type: 'test'
+  ...
+# Subtest: default policy stays "every" so existing numbers do not change
+ok 35 - default policy stays "every" so existing numbers do not change
+  ---
+  duration_ms: 0.152195
+  type: 'test'
+  ...
+# Subtest: policy "taken" refuses plain strings (it cannot guess branch outcomes)
+ok 36 - policy "taken" refuses plain strings (it cannot guess branch outcomes)
+  ---
+  duration_ms: 0.198812
+  type: 'test'
+  ...
+# Subtest: unknown policy is rejected
+ok 37 - unknown policy is rejected
+  ---
+  duration_ms: 0.06423
+  type: 'test'
+  ...
+# Subtest: taken-only never costs more than every-branch on real workloads, and bubbles = penalty × taken
+ok 38 - taken-only never costs more than every-branch on real workloads, and bubbles = penalty × taken
+  ---
+  duration_ms: 4.801446
+  type: 'test'
+  ...
+# Subtest: traceToPipelineInput reads the interpreter's own branch outcomes (RV32I MAX)
+ok 39 - traceToPipelineInput reads the interpreter's own branch outcomes (RV32I MAX)
+  ---
+  duration_ms: 0.541832
+  type: 'test'
+  ...
+# Subtest: FIB loop: taken branches counted from the trace match the interpreter notes
+ok 40 - FIB loop: taken branches counted from the trace match the interpreter notes
+  ---
+  duration_ms: 0.440587
+  type: 'test'
+  ...
+# Subtest: writing x0/$zero creates no RAW hazard (forwarding off)
+ok 41 - writing x0/$zero creates no RAW hazard (forwarding off)
+  ---
+  duration_ms: 0.099955
+  type: 'test'
+  ...
+# Subtest: a real dependency still stalls (forwarding off: 2 bubbles; on: 0)
+ok 42 - a real dependency still stalls (forwarding off: 2 bubbles; on: 0)
+  ---
+  duration_ms: 0.068562
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture ADD
+ok 43 - randomized four-architecture ADD
+  ---
+  duration_ms: 17.340635
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture COPY
+ok 44 - randomized four-architecture COPY
+  ---
+  duration_ms: 10.715033
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture NEG
+ok 45 - randomized four-architecture NEG
+  ---
+  duration_ms: 12.609601
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture EXPR
+ok 46 - randomized four-architecture EXPR
+  ---
+  duration_ms: 30.572902
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture MAX
+ok 47 - randomized four-architecture MAX
+  ---
+  duration_ms: 13.939712
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture SUMN
+ok 48 - randomized four-architecture SUMN
+  ---
+  duration_ms: 28.54063
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture ARR
+ok 49 - randomized four-architecture ARR
+  ---
+  duration_ms: 16.337862
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture ARR_LOOP
+ok 50 - randomized four-architecture ARR_LOOP
+  ---
+  duration_ms: 27.043534
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture MAXARR
+ok 51 - randomized four-architecture MAXARR
+  ---
+  duration_ms: 48.15024
+  type: 'test'
+  ...
+# Subtest: randomized four-architecture FIB
+ok 52 - randomized four-architecture FIB
+  ---
+  duration_ms: 37.586701
+  type: 'test'
+  ...
+# Subtest: MAX covers both branch directions and sign boundaries
+ok 53 - MAX covers both branch directions and sign boundaries
+  ---
+  duration_ms: 1.787157
+  type: 'test'
+  ...
+# Subtest: randomized suite really executed thousands of programs
+ok 54 - randomized suite really executed thousands of programs
+  ---
+  duration_ms: 0.106498
+  type: 'test'
+  ...
+# Subtest: x86 signed overflow makes JGE take the correct path (OF set)
+ok 55 - x86 signed overflow makes JGE take the correct path (OF set)
+  ---
+  duration_ms: 2.404312
+  type: 'test'
+  ...
+# Subtest: x86 DEC preserves the carry flag
+ok 56 - x86 DEC preserves the carry flag
+  ---
+  duration_ms: 0.401904
+  type: 'test'
+  ...
+# Subtest: step back restores registers, memory, PC and cycle count
+ok 57 - step back restores registers, memory, PC and cycle count
+  ---
+  duration_ms: 1.074443
+  type: 'test'
+  ...
+# Subtest: MIPS32 assembler rejects unknown opcode
+ok 58 - MIPS32 assembler rejects unknown opcode
+  ---
+  duration_ms: 0.346489
+  type: 'test'
+  ...
+# Subtest: MIPS32 assembler rejects bad register
+ok 59 - MIPS32 assembler rejects bad register
+  ---
+  duration_ms: 0.112545
+  type: 'test'
+  ...
+# Subtest: MIPS32 assembler rejects missing label
+ok 60 - MIPS32 assembler rejects missing label
+  ---
+  duration_ms: 0.084555
+  type: 'test'
+  ...
+# Subtest: MIPS32 assembler rejects duplicate label
+ok 61 - MIPS32 assembler rejects duplicate label
+  ---
+  duration_ms: 0.067062
+  type: 'test'
+  ...
+# Subtest: MIPS32 assembler rejects missing operand
+ok 62 - MIPS32 assembler rejects missing operand
+  ---
+  duration_ms: 0.061992
+  type: 'test'
+  ...
+# Subtest: MIPS32 assembler rejects misaligned address
+ok 63 - MIPS32 assembler rejects misaligned address
+  ---
+  duration_ms: 0.185518
+  type: 'test'
+  ...
+# Subtest: MIPS32 assembler rejects RISC-V-only opcodes (auipc, blt)
+ok 64 - MIPS32 assembler rejects RISC-V-only opcodes (auipc, blt)
+  ---
+  duration_ms: 0.349555
+  type: 'test'
+  ...
+# Subtest: RV32I assembler rejects MIPS-only mnemonics (addu)
+ok 65 - RV32I assembler rejects MIPS-only mnemonics (addu)
+  ---
+  duration_ms: 0.125614
+  type: 'test'
+  ...
+# Subtest: RV32I ABI aliases and xN names address the same register
+ok 66 - RV32I ABI aliases and xN names address the same register
+  ---
+  duration_ms: 0.213102
+  type: 'test'
+  ...
+# Subtest: RV32I signed 12-bit immediate range is enforced (addi)
+ok 67 - RV32I signed 12-bit immediate range is enforced (addi)
+  ---
+  duration_ms: 0.190142
+  type: 'test'
+  ...
+# Subtest: RV32I store displacement range is enforced
+ok 68 - RV32I store displacement range is enforced
+  ---
+  duration_ms: 0.061023
+  type: 'test'
+  ...
+# Subtest: x86 immediate must fit a signed 32-bit value
+ok 69 - x86 immediate must fit a signed 32-bit value
+  ---
+  duration_ms: 0.131915
+  type: 'test'
+  ...
+# Subtest: x86 immediate destination is rejected
+ok 70 - x86 immediate destination is rejected
+  ---
+  duration_ms: 0.07908
+  type: 'test'
+  ...
+# Subtest: modified workload inputs never reuse a stale cached result
+ok 71 - modified workload inputs never reuse a stale cached result
+  ---
+  duration_ms: 0.568868
+  type: 'test'
+  ...
+# Subtest: MIPS32 encodings match the architecture specification
+ok 72 - MIPS32 encodings match the architecture specification
+  ---
+  duration_ms: 0.610704
+  type: 'test'
+  ...
+# Subtest: RV32I encodings match the architecture specification
+ok 73 - RV32I encodings match the architecture specification
+  ---
+  duration_ms: 0.147366
+  type: 'test'
+  ...
+# Subtest: custom ISA: addition program stores 12 in cell 3 and encodes to the chosen width
+ok 74 - custom ISA: addition program stores 12 in cell 3 and encodes to the chosen width
+  ---
+  duration_ms: 1.013436
+  type: 'test'
+  ...
+# Subtest: custom ISA: SUB/JNZ loop terminates with 0 after 10 instructions
+ok 75 - custom ISA: SUB/JNZ loop terminates with 0 after 10 instructions
+  ---
+  duration_ms: 0.257077
+  type: 'test'
+  ...
+# Subtest: custom ISA: invalid register and branch target are rejected
+ok 76 - custom ISA: invalid register and branch target are rejected
+  ---
+  duration_ms: 0.190392
+  type: 'test'
+  ...
+# Subtest: custom ISA: data width is independent of instruction encoding width (8-bit wraparound, 24-bit word)
+ok 77 - custom ISA: data width is independent of instruction encoding width (8-bit wraparound, 24-bit word)
+  ---
+  duration_ms: 0.142017
+  type: 'test'
+  ...
+# Subtest: custom ISA: MOVI immediate wider than the data width wraps (200 → -56 on 8-bit data)
+ok 78 - custom ISA: MOVI immediate wider than the data width wraps (200 → -56 on 8-bit data)
+  ---
+  duration_ms: 0.091691
+  type: 'test'
+  ...
+# Subtest: custom ISA: SUB wraps at the data width (-128 - 1 → 127 on 8-bit data)
+ok 79 - custom ISA: SUB wraps at the data width (-128 - 1 → 127 on 8-bit data)
+  ---
+  duration_ms: 0.060742
+  type: 'test'
+  ...
+# Subtest: custom ISA: runaway program hits the execution limit instead of hanging
+ok 80 - custom ISA: runaway program hits the execution limit instead of hanging
+  ---
+  duration_ms: 1.375616
+  type: 'test'
+  ...
+# Subtest: esc neutralises HTML metacharacters and quotes
+ok 81 - esc neutralises HTML metacharacters and quotes
+  ---
+  duration_ms: 0.087995
+  type: 'test'
+  ...
+# Subtest: pipeline: hand-calculated schedule with forwarding (12 cycles, 2 load-use stalls)
+ok 82 - pipeline: hand-calculated schedule with forwarding (12 cycles, 2 load-use stalls)
+  ---
+  duration_ms: 5.543436
+  type: 'test'
+  ...
+# Subtest: pipeline: same program without forwarding (18 cycles, 8 stalls = 4 dependencies x 2)
+ok 83 - pipeline: same program without forwarding (18 cycles, 8 stalls = 4 dependencies x 2)
+  ---
+  duration_ms: 3.316266
+  type: 'test'
+  ...
+# Subtest: pipeline: forwarding on/off give identical final registers and every delivered operand matches the interpreter
+ok 84 - pipeline: forwarding on/off give identical final registers and every delivered operand matches the interpreter
+  ---
+  duration_ms: 90.55197
+  type: 'test'
+  ...
+# Subtest: pipeline: the operand check catches a schedule that would read a stale value (mutation)
+ok 85 - pipeline: the operand check catches a schedule that would read a stale value (mutation)
+  ---
+  duration_ms: 1.056993
+  type: 'test'
+  ...
+# Subtest: pipeline timeline: cycle 4 of a load-use pair shows a stall in ID, a bubble in EX and a held fetch
+ok 86 - pipeline timeline: cycle 4 of a load-use pair shows a stall in ID, a bubble in EX and a held fetch
+  ---
+  duration_ms: 0.491251
+  type: 'test'
+  ...
+# Subtest: pipeline timeline: branch penalty slots are bubbles (every) or flushes (taken), one IF slot per penalty cycle
+ok 87 - pipeline timeline: branch penalty slots are bubbles (every) or flushes (taken), one IF slot per penalty cycle
+  ---
+  duration_ms: 0.582718
+  type: 'test'
+  ...
+# Subtest: pipeline: five independent instructions take 9 cycles and report execution time at a clock
+ok 88 - pipeline: five independent instructions take 9 cycles and report execution time at a clock
+  ---
+  duration_ms: 0.448625
+  type: 'test'
+  ...
+# Subtest: datapath: arithmetic, register-register, load, store and branch values match the interpreter
+ok 89 - datapath: arithmetic, register-register, load, store and branch values match the interpreter
+  ---
+  duration_ms: 5.50662
+  type: 'test'
+  ...
+# Subtest: datapath: every executed instruction of every workload on all four models cross-checks
+ok 90 - datapath: every executed instruction of every workload on all four models cross-checks
+  ---
+  duration_ms: 20.56693
+  type: 'test'
+  ...
+# Subtest: datapath: U-type, SUBLEQ and x86 memory operands
+ok 91 - datapath: U-type, SUBLEQ and x86 memory operands
+  ---
+  duration_ms: 0.827465
+  type: 'test'
+  ...
+# Subtest: cache: address split by hand (address 0x1234, 64 B, 16 B blocks, 2-way -> 2 sets)
+ok 92 - cache: address split by hand (address 0x1234, 64 B, 16 B blocks, 2-way -> 2 sets)
+  ---
+  duration_ms: 0.413648
+  type: 'test'
+  ...
+# Subtest: cache: LRU vs FIFO on the replacement sequence (hand traced: LRU 5 hits, FIFO 3 hits)
+ok 93 - cache: LRU vs FIFO on the replacement sequence (hand traced: LRU 5 hits, FIFO 3 hits)
+  ---
+  duration_ms: 1.49321
+  type: 'test'
+  ...
+# Subtest: cache: 3C classification (conflict pattern and capacity scan)
+ok 94 - cache: 3C classification (conflict pattern and capacity scan)
+  ---
+  duration_ms: 0.960358
+  type: 'test'
+  ...
+# Subtest: cache: write-back marks dirty and writes back once; write-through writes every store
+ok 95 - cache: write-back marks dirty and writes back once; write-through writes every store
+  ---
+  duration_ms: 0.466223
+  type: 'test'
+  ...
+# Subtest: cache: seeded random replacement is reproducible; legacy direct-mapped API unchanged; invalid geometry rejected
+ok 96 - cache: seeded random replacement is reproducible; legacy direct-mapped API unchanged; invalid geometry rejected
+  ---
+  duration_ms: 1.441798
+  type: 'test'
+  ...
+# Subtest: cache: every workload trace replays under every configuration with consistent statistics
+ok 97 - cache: every workload trace replays under every configuration with consistent statistics
+  ---
+  duration_ms: 30.608083
+  type: 'test'
+  ...
+# Subtest: demo 1: MIPS32 vs RV32I Fibonacci(7) is reproducible and explained by slt vs bge
+ok 98 - demo 1: MIPS32 vs RV32I Fibonacci(7) is reproducible and explained by slt vs bge
+  ---
+  duration_ms: 7.122686
+  type: 'test'
+  ...
+# Subtest: demo 2: forwarding experiment saves 6 cycles (18 -> 12)
+ok 99 - demo 2: forwarding experiment saves 6 cycles (18 -> 12)
+  ---
+  duration_ms: 0.495837
+  type: 'test'
+  ...
+# Subtest: demo 3: interleaved arrays thrash a direct-mapped cache; 2-way or double size fix it
+ok 100 - demo 3: interleaved arrays thrash a direct-mapped cache; 2-way or double size fix it
+  ---
+  duration_ms: 1.038571
+  type: 'test'
+  ...
+# Subtest: engine trace records access values and memory before/after
+ok 101 - engine trace records access values and memory before/after
+  ---
+  duration_ms: 0.391499
+  type: 'test'
+  ...
+# Subtest: custom ISA: clear errors for undefined labels, non-numbers and impossible formats
+ok 102 - custom ISA: clear errors for undefined labels, non-numbers and impossible formats
+  ---
+  duration_ms: 1.959215
+  type: 'test'
+  ...
+1..102
+# tests 102
+# suites 0
+# pass 102
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2335.69303

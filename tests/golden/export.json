@@ -1,0 +1,46 @@
+{
+ "lab": "Processor Lab test",
+ "credit": "test fixture",
+ "settings": {
+  "clock_mhz": 100,
+  "cache": {
+   "cacheSize": 64,
+   "blockSize": 16
+  }
+ },
+ "workloads": [
+  {
+   "id": "ADD"
+  }
+ ],
+ "programs": {
+  "ADD": {
+   "rv": [
+    "addi t0,zero,1"
+   ]
+  }
+ },
+ "limit": 2000,
+ "results": [
+  {
+   "model": "rv",
+   "workload": "ADD",
+   "static": 1,
+   "dynamic": 1,
+   "cycles": 5,
+   "cpi": "5.00",
+   "pipeline_cycles": 5,
+   "pipeline_cpi": "5.000",
+   "time_ns": 50,
+   "energy_nj": "20.00",
+   "reads": 0,
+   "writes": 0,
+   "code_bytes": 4,
+   "cache_hits": 0,
+   "cache_misses": 1,
+   "cache_miss_rate": "1.00",
+   "amat_cycles": "21.00",
+   "ok": true
+  }
+ ]
+}

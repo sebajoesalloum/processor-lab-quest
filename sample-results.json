@@ -1,0 +1,1398 @@
+{
+  "project": "Processor Lab 3.0",
+  "author": "Created by Student Seba Joe Salloum",
+  "generated_on": "2026-11-08",
+  "methodology": "Educational interpreter, trace-derived counts and editable timing/cache assumptions; not physical processor measurements.",
+  "cache_assumptions": {
+    "cacheSize": 64,
+    "blockSize": 16,
+    "hitTime": 1,
+    "missPenalty": 20
+  },
+  "results": [
+    {
+      "architecture": "sq",
+      "workload": "ADD",
+      "expected": 12,
+      "actual": 12,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 15,
+      "cpi": 5,
+      "code_bytes": 36,
+      "reads": 6,
+      "writes": 3,
+      "instruction_mix": {
+        "sub+branch": 3
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 9,
+        "hits": 7,
+        "misses": 2,
+        "miss_rate": 0.2222222222222222,
+        "amat_cycles": 5.444444444444445
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "ADD",
+      "expected": 12,
+      "actual": 12,
+      "correct": true,
+      "static_instructions": 4,
+      "dynamic_instructions": 4,
+      "modeled_cycles": 7,
+      "cpi": 1.75,
+      "code_bytes": 16,
+      "reads": 2,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 2,
+        "arith": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 3,
+        "hits": 2,
+        "misses": 1,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "ADD",
+      "expected": 12,
+      "actual": 12,
+      "correct": true,
+      "static_instructions": 4,
+      "dynamic_instructions": 4,
+      "modeled_cycles": 7,
+      "cpi": 1.75,
+      "code_bytes": 16,
+      "reads": 2,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 2,
+        "arith": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 3,
+        "hits": 2,
+        "misses": 1,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "ADD",
+      "expected": 12,
+      "actual": 12,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 10,
+      "cpi": 3.3333333333333335,
+      "code_bytes": 8,
+      "reads": 2,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 3,
+        "hits": 2,
+        "misses": 1,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "COPY",
+      "expected": 9,
+      "actual": 9,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 15,
+      "cpi": 5,
+      "code_bytes": 36,
+      "reads": 6,
+      "writes": 3,
+      "instruction_mix": {
+        "sub+branch": 3
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 9,
+        "hits": 7,
+        "misses": 2,
+        "miss_rate": 0.2222222222222222,
+        "amat_cycles": 5.444444444444445
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "COPY",
+      "expected": 9,
+      "actual": 9,
+      "correct": true,
+      "static_instructions": 2,
+      "dynamic_instructions": 2,
+      "modeled_cycles": 4,
+      "cpi": 2,
+      "code_bytes": 8,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "COPY",
+      "expected": 9,
+      "actual": 9,
+      "correct": true,
+      "static_instructions": 2,
+      "dynamic_instructions": 2,
+      "modeled_cycles": 4,
+      "cpi": 2,
+      "code_bytes": 8,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "COPY",
+      "expected": 9,
+      "actual": 9,
+      "correct": true,
+      "static_instructions": 2,
+      "dynamic_instructions": 2,
+      "modeled_cycles": 6,
+      "cpi": 3,
+      "code_bytes": 5,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "NEG",
+      "expected": -6,
+      "actual": -6,
+      "correct": true,
+      "static_instructions": 2,
+      "dynamic_instructions": 2,
+      "modeled_cycles": 10,
+      "cpi": 5,
+      "code_bytes": 24,
+      "reads": 4,
+      "writes": 2,
+      "instruction_mix": {
+        "sub+branch": 2
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 6,
+        "hits": 5,
+        "misses": 1,
+        "miss_rate": 0.16666666666666666,
+        "amat_cycles": 4.333333333333333
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "NEG",
+      "expected": -6,
+      "actual": -6,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 5,
+      "cpi": 1.6666666666666667,
+      "code_bytes": 12,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "NEG",
+      "expected": -6,
+      "actual": -6,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 5,
+      "cpi": 1.6666666666666667,
+      "code_bytes": 12,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "NEG",
+      "expected": -6,
+      "actual": -6,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 7,
+      "cpi": 2.3333333333333335,
+      "code_bytes": 7,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "EXPR",
+      "expected": 9,
+      "actual": 9,
+      "correct": true,
+      "static_instructions": 4,
+      "dynamic_instructions": 4,
+      "modeled_cycles": 20,
+      "cpi": 5,
+      "code_bytes": 48,
+      "reads": 8,
+      "writes": 4,
+      "instruction_mix": {
+        "sub+branch": 4
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 12,
+        "hits": 10,
+        "misses": 2,
+        "miss_rate": 0.16666666666666666,
+        "amat_cycles": 4.333333333333333
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "EXPR",
+      "expected": 9,
+      "actual": 9,
+      "correct": true,
+      "static_instructions": 6,
+      "dynamic_instructions": 6,
+      "modeled_cycles": 10,
+      "cpi": 1.6666666666666667,
+      "code_bytes": 24,
+      "reads": 3,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 3,
+        "arith": 2,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 4,
+        "hits": 3,
+        "misses": 1,
+        "miss_rate": 0.25,
+        "amat_cycles": 6
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "EXPR",
+      "expected": 9,
+      "actual": 9,
+      "correct": true,
+      "static_instructions": 6,
+      "dynamic_instructions": 6,
+      "modeled_cycles": 10,
+      "cpi": 1.6666666666666667,
+      "code_bytes": 24,
+      "reads": 3,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 3,
+        "arith": 2,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 4,
+        "hits": 3,
+        "misses": 1,
+        "miss_rate": 0.25,
+        "amat_cycles": 6
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "EXPR",
+      "expected": 9,
+      "actual": 9,
+      "correct": true,
+      "static_instructions": 4,
+      "dynamic_instructions": 4,
+      "modeled_cycles": 14,
+      "cpi": 3.5,
+      "code_bytes": 11,
+      "reads": 3,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 2,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 4,
+        "hits": 3,
+        "misses": 1,
+        "miss_rate": 0.25,
+        "amat_cycles": 6
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "SUMN",
+      "expected": 15,
+      "actual": 15,
+      "correct": true,
+      "static_instructions": 4,
+      "dynamic_instructions": 15,
+      "modeled_cycles": 75,
+      "cpi": 5,
+      "code_bytes": 48,
+      "reads": 30,
+      "writes": 15,
+      "instruction_mix": {
+        "sub+branch": 15
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 45,
+        "hits": 42,
+        "misses": 3,
+        "miss_rate": 0.06666666666666667,
+        "amat_cycles": 2.333333333333333
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "SUMN",
+      "expected": 15,
+      "actual": 15,
+      "correct": true,
+      "static_instructions": 5,
+      "dynamic_instructions": 17,
+      "modeled_cycles": 19,
+      "cpi": 1.1176470588235294,
+      "code_bytes": 20,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 10,
+        "branch": 5,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "SUMN",
+      "expected": 15,
+      "actual": 15,
+      "correct": true,
+      "static_instructions": 5,
+      "dynamic_instructions": 17,
+      "modeled_cycles": 19,
+      "cpi": 1.1176470588235294,
+      "code_bytes": 20,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 10,
+        "branch": 5,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "SUMN",
+      "expected": 15,
+      "actual": 15,
+      "correct": true,
+      "static_instructions": 5,
+      "dynamic_instructions": 17,
+      "modeled_cycles": 26,
+      "cpi": 1.5294117647058822,
+      "code_bytes": 11,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 10,
+        "branch": 5,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "MAXa",
+      "expected": 7,
+      "actual": 7,
+      "correct": true,
+      "static_instructions": 9,
+      "dynamic_instructions": 6,
+      "modeled_cycles": 30,
+      "cpi": 5,
+      "code_bytes": 108,
+      "reads": 12,
+      "writes": 6,
+      "instruction_mix": {
+        "sub+branch": 6
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 18,
+        "hits": 16,
+        "misses": 2,
+        "miss_rate": 0.1111111111111111,
+        "amat_cycles": 3.2222222222222223
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "MAXa",
+      "expected": 7,
+      "actual": 7,
+      "correct": true,
+      "static_instructions": 6,
+      "dynamic_instructions": 5,
+      "modeled_cycles": 8,
+      "cpi": 1.6,
+      "code_bytes": 24,
+      "reads": 2,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 2,
+        "arith": 1,
+        "branch": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 3,
+        "hits": 2,
+        "misses": 1,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "MAXa",
+      "expected": 7,
+      "actual": 7,
+      "correct": true,
+      "static_instructions": 7,
+      "dynamic_instructions": 6,
+      "modeled_cycles": 9,
+      "cpi": 1.5,
+      "code_bytes": 28,
+      "reads": 2,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 2,
+        "branch": 2,
+        "store": 1,
+        "arith": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 3,
+        "hits": 2,
+        "misses": 1,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "MAXa",
+      "expected": 7,
+      "actual": 7,
+      "correct": true,
+      "static_instructions": 5,
+      "dynamic_instructions": 4,
+      "modeled_cycles": 12,
+      "cpi": 3,
+      "code_bytes": 13,
+      "reads": 2,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 1,
+        "branch": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 3,
+        "hits": 2,
+        "misses": 1,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "MAXb",
+      "expected": 8,
+      "actual": 8,
+      "correct": true,
+      "static_instructions": 9,
+      "dynamic_instructions": 8,
+      "modeled_cycles": 40,
+      "cpi": 5,
+      "code_bytes": 108,
+      "reads": 16,
+      "writes": 8,
+      "instruction_mix": {
+        "sub+branch": 8
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 24,
+        "hits": 22,
+        "misses": 2,
+        "miss_rate": 0.08333333333333333,
+        "amat_cycles": 2.6666666666666665
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "MAXb",
+      "expected": 8,
+      "actual": 8,
+      "correct": true,
+      "static_instructions": 6,
+      "dynamic_instructions": 6,
+      "modeled_cycles": 9,
+      "cpi": 1.5,
+      "code_bytes": 24,
+      "reads": 2,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 2,
+        "arith": 2,
+        "branch": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 3,
+        "hits": 2,
+        "misses": 1,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "MAXb",
+      "expected": 8,
+      "actual": 8,
+      "correct": true,
+      "static_instructions": 7,
+      "dynamic_instructions": 5,
+      "modeled_cycles": 8,
+      "cpi": 1.6,
+      "code_bytes": 28,
+      "reads": 2,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 2,
+        "branch": 1,
+        "store": 1,
+        "arith": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 3,
+        "hits": 2,
+        "misses": 1,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "MAXb",
+      "expected": 8,
+      "actual": 8,
+      "correct": true,
+      "static_instructions": 5,
+      "dynamic_instructions": 5,
+      "modeled_cycles": 15,
+      "cpi": 3,
+      "code_bytes": 13,
+      "reads": 3,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 2,
+        "arith": 1,
+        "branch": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 4,
+        "hits": 3,
+        "misses": 1,
+        "miss_rate": 0.25,
+        "amat_cycles": 6
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "ARR",
+      "expected": 10,
+      "actual": 10,
+      "correct": true,
+      "static_instructions": 5,
+      "dynamic_instructions": 5,
+      "modeled_cycles": 25,
+      "cpi": 5,
+      "code_bytes": 60,
+      "reads": 10,
+      "writes": 5,
+      "instruction_mix": {
+        "sub+branch": 5
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 15,
+        "hits": 11,
+        "misses": 4,
+        "miss_rate": 0.26666666666666666,
+        "amat_cycles": 6.333333333333333
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "ARR",
+      "expected": 10,
+      "actual": 10,
+      "correct": true,
+      "static_instructions": 8,
+      "dynamic_instructions": 8,
+      "modeled_cycles": 13,
+      "cpi": 1.625,
+      "code_bytes": 32,
+      "reads": 4,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 4,
+        "arith": 3,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 5,
+        "hits": 2,
+        "misses": 3,
+        "miss_rate": 0.6,
+        "amat_cycles": 13
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "ARR",
+      "expected": 10,
+      "actual": 10,
+      "correct": true,
+      "static_instructions": 8,
+      "dynamic_instructions": 8,
+      "modeled_cycles": 13,
+      "cpi": 1.625,
+      "code_bytes": 32,
+      "reads": 4,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 4,
+        "arith": 3,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 5,
+        "hits": 2,
+        "misses": 3,
+        "miss_rate": 0.6,
+        "amat_cycles": 13
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "ARR",
+      "expected": 10,
+      "actual": 10,
+      "correct": true,
+      "static_instructions": 5,
+      "dynamic_instructions": 5,
+      "modeled_cycles": 18,
+      "cpi": 3.6,
+      "code_bytes": 15,
+      "reads": 4,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 3,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 5,
+        "hits": 2,
+        "misses": 3,
+        "miss_rate": 0.6,
+        "amat_cycles": 13
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "ARR_LOOP",
+      "expected": 10,
+      "actual": 10,
+      "correct": true,
+      "static_instructions": 5,
+      "dynamic_instructions": 16,
+      "modeled_cycles": 80,
+      "cpi": 5,
+      "code_bytes": 60,
+      "reads": 36,
+      "writes": 16,
+      "instruction_mix": {
+        "sub+branch": 16
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 52,
+        "hits": 48,
+        "misses": 4,
+        "miss_rate": 0.07692307692307693,
+        "amat_cycles": 2.5384615384615383
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "ARR_LOOP",
+      "expected": 10,
+      "actual": 10,
+      "correct": true,
+      "static_instructions": 8,
+      "dynamic_instructions": 23,
+      "modeled_cycles": 29,
+      "cpi": 1.2608695652173914,
+      "code_bytes": 32,
+      "reads": 5,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 5,
+        "arith": 13,
+        "branch": 4,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 6,
+        "hits": 3,
+        "misses": 3,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "ARR_LOOP",
+      "expected": 10,
+      "actual": 10,
+      "correct": true,
+      "static_instructions": 9,
+      "dynamic_instructions": 24,
+      "modeled_cycles": 30,
+      "cpi": 1.25,
+      "code_bytes": 36,
+      "reads": 5,
+      "writes": 1,
+      "instruction_mix": {
+        "arith": 14,
+        "load": 5,
+        "branch": 4,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 6,
+        "hits": 3,
+        "misses": 3,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "ARR_LOOP",
+      "expected": 10,
+      "actual": 10,
+      "correct": true,
+      "static_instructions": 7,
+      "dynamic_instructions": 19,
+      "modeled_cycles": 39,
+      "cpi": 2.0526315789473686,
+      "code_bytes": 19,
+      "reads": 5,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "move": 1,
+        "arith": 12,
+        "branch": 4,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 6,
+        "hits": 3,
+        "misses": 3,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "CONST",
+      "expected": 2048,
+      "actual": 2048,
+      "correct": true,
+      "static_instructions": 2,
+      "dynamic_instructions": 2,
+      "modeled_cycles": 10,
+      "cpi": 5,
+      "code_bytes": 24,
+      "reads": 4,
+      "writes": 2,
+      "instruction_mix": {
+        "sub+branch": 2
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 6,
+        "hits": 4,
+        "misses": 2,
+        "miss_rate": 0.3333333333333333,
+        "amat_cycles": 7.666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "CONST",
+      "expected": 2048,
+      "actual": 2048,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 4,
+      "cpi": 1.3333333333333333,
+      "code_bytes": 12,
+      "reads": 0,
+      "writes": 1,
+      "instruction_mix": {
+        "arith": 2,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 1,
+        "hits": 0,
+        "misses": 1,
+        "miss_rate": 1,
+        "amat_cycles": 21
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "CONST",
+      "expected": 2048,
+      "actual": 2048,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 4,
+      "cpi": 1.3333333333333333,
+      "code_bytes": 12,
+      "reads": 0,
+      "writes": 1,
+      "instruction_mix": {
+        "arith": 2,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 1,
+        "hits": 0,
+        "misses": 1,
+        "miss_rate": 1,
+        "amat_cycles": 21
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "CONST",
+      "expected": 2048,
+      "actual": 2048,
+      "correct": true,
+      "static_instructions": 3,
+      "dynamic_instructions": 3,
+      "modeled_cycles": 5,
+      "cpi": 1.6666666666666667,
+      "code_bytes": 11,
+      "reads": 0,
+      "writes": 1,
+      "instruction_mix": {
+        "move": 1,
+        "arith": 1,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 1,
+        "hits": 0,
+        "misses": 1,
+        "miss_rate": 1,
+        "amat_cycles": 21
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "FIB",
+      "expected": 13,
+      "actual": 13,
+      "correct": true,
+      "static_instructions": 19,
+      "dynamic_instructions": 100,
+      "modeled_cycles": 500,
+      "cpi": 5,
+      "code_bytes": 228,
+      "reads": 200,
+      "writes": 100,
+      "instruction_mix": {
+        "sub+branch": 100
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 300,
+        "hits": 296,
+        "misses": 4,
+        "miss_rate": 0.013333333333333334,
+        "amat_cycles": 1.2666666666666666
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "FIB",
+      "expected": 13,
+      "actual": 13,
+      "correct": true,
+      "static_instructions": 12,
+      "dynamic_instructions": 49,
+      "modeled_cycles": 51,
+      "cpi": 1.0408163265306123,
+      "code_bytes": 48,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 34,
+        "branch": 13,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "FIB",
+      "expected": 13,
+      "actual": 13,
+      "correct": true,
+      "static_instructions": 11,
+      "dynamic_instructions": 42,
+      "modeled_cycles": 44,
+      "cpi": 1.0476190476190477,
+      "code_bytes": 44,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "arith": 27,
+        "branch": 13,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "FIB",
+      "expected": 13,
+      "actual": 13,
+      "correct": true,
+      "static_instructions": 13,
+      "dynamic_instructions": 55,
+      "modeled_cycles": 72,
+      "cpi": 1.309090909090909,
+      "code_bytes": 37,
+      "reads": 1,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 1,
+        "move": 21,
+        "arith": 19,
+        "branch": 13,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 2,
+        "hits": 1,
+        "misses": 1,
+        "miss_rate": 0.5,
+        "amat_cycles": 11
+      },
+      "error": ""
+    },
+    {
+      "architecture": "sq",
+      "workload": "MAXARR",
+      "expected": 4,
+      "actual": 4,
+      "correct": true,
+      "static_instructions": 28,
+      "dynamic_instructions": 22,
+      "modeled_cycles": 110,
+      "cpi": 5,
+      "code_bytes": 336,
+      "reads": 44,
+      "writes": 22,
+      "instruction_mix": {
+        "sub+branch": 22
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 66,
+        "hits": 62,
+        "misses": 4,
+        "miss_rate": 0.06060606060606061,
+        "amat_cycles": 2.212121212121212
+      },
+      "error": ""
+    },
+    {
+      "architecture": "mips",
+      "workload": "MAXARR",
+      "expected": 4,
+      "actual": 4,
+      "correct": true,
+      "static_instructions": 11,
+      "dynamic_instructions": 23,
+      "modeled_cycles": 28,
+      "cpi": 1.2173913043478262,
+      "code_bytes": 44,
+      "reads": 4,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 4,
+        "arith": 12,
+        "branch": 6,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 5,
+        "hits": 2,
+        "misses": 3,
+        "miss_rate": 0.6,
+        "amat_cycles": 13
+      },
+      "error": ""
+    },
+    {
+      "architecture": "rv",
+      "workload": "MAXARR",
+      "expected": 4,
+      "actual": 4,
+      "correct": true,
+      "static_instructions": 10,
+      "dynamic_instructions": 20,
+      "modeled_cycles": 25,
+      "cpi": 1.25,
+      "code_bytes": 40,
+      "reads": 4,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 4,
+        "arith": 9,
+        "branch": 6,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 5,
+        "hits": 2,
+        "misses": 3,
+        "miss_rate": 0.6,
+        "amat_cycles": 13
+      },
+      "error": ""
+    },
+    {
+      "architecture": "x86",
+      "workload": "MAXARR",
+      "expected": 4,
+      "actual": 4,
+      "correct": true,
+      "static_instructions": 11,
+      "dynamic_instructions": 23,
+      "modeled_cycles": 39,
+      "cpi": 1.6956521739130435,
+      "code_bytes": 31,
+      "reads": 4,
+      "writes": 1,
+      "instruction_mix": {
+        "load": 4,
+        "move": 3,
+        "arith": 9,
+        "branch": 6,
+        "store": 1
+      },
+      "cache": {
+        "size_bytes": 64,
+        "block_bytes": 16,
+        "accesses": 5,
+        "hits": 2,
+        "misses": 3,
+        "miss_rate": 0.6,
+        "amat_cycles": 13
+      },
+      "error": ""
+    }
+  ]
+}

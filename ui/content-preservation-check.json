@@ -1,0 +1,254 @@
+{
+  "source": "Processor_Lab_4_0.zip original built simulator versus Quest offline app",
+  "readingDetail": "all",
+  "method": "Normalize whitespace only in #v.textContent; compare exact text, heading order, and control counts per original section",
+  "passed": true,
+  "sections": [
+    {
+      "section": "over",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 3854,
+      "questCharacters": 3854,
+      "originalTextSha256": "a1772f0db573cfe7ab2db6648f1ef7240b86a5a297287bf30427ace7a931af18",
+      "questTextSha256": "a1772f0db573cfe7ab2db6648f1ef7240b86a5a297287bf30427ace7a931af18",
+      "originalControls": {
+        "input": 0,
+        "select": 0,
+        "button": 13,
+        "textarea": 0
+      },
+      "questControls": {
+        "input": 0,
+        "select": 0,
+        "button": 13,
+        "textarea": 0
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "build",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 3898,
+      "questCharacters": 3898,
+      "originalTextSha256": "44c859f9c5cbfb3e99c8949d4f2f2adea27d1b21ca9d7c9b79b91deb0c063d05",
+      "questTextSha256": "44c859f9c5cbfb3e99c8949d4f2f2adea27d1b21ca9d7c9b79b91deb0c063d05",
+      "originalControls": {
+        "input": 0,
+        "select": 3,
+        "button": 6,
+        "textarea": 1
+      },
+      "questControls": {
+        "input": 0,
+        "select": 3,
+        "button": 6,
+        "textarea": 1
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "oisc",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 2414,
+      "questCharacters": 2414,
+      "originalTextSha256": "ac4adf8ed953f464dea98c5eef19c5c3911f82f98afdb4e1681779535af47a3b",
+      "questTextSha256": "ac4adf8ed953f464dea98c5eef19c5c3911f82f98afdb4e1681779535af47a3b",
+      "originalControls": {
+        "input": 3,
+        "select": 0,
+        "button": 10,
+        "textarea": 0
+      },
+      "questControls": {
+        "input": 3,
+        "select": 0,
+        "button": 10,
+        "textarea": 0
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "mod",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 4320,
+      "questCharacters": 4320,
+      "originalTextSha256": "3e73fc310162298232593578b37bb83a2a1c69dc79fe3a93c946ba18cfaf2c9c",
+      "questTextSha256": "3e73fc310162298232593578b37bb83a2a1c69dc79fe3a93c946ba18cfaf2c9c",
+      "originalControls": {
+        "input": 0,
+        "select": 0,
+        "button": 3,
+        "textarea": 0
+      },
+      "questControls": {
+        "input": 0,
+        "select": 0,
+        "button": 3,
+        "textarea": 0
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "exp",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 3292,
+      "questCharacters": 3292,
+      "originalTextSha256": "41b89931b501cd2ab56e9e8e7630be6456067df73d0784180104e3243d8b3b49",
+      "questTextSha256": "41b89931b501cd2ab56e9e8e7630be6456067df73d0784180104e3243d8b3b49",
+      "originalControls": {
+        "input": 0,
+        "select": 3,
+        "button": 4,
+        "textarea": 0
+      },
+      "questControls": {
+        "input": 0,
+        "select": 3,
+        "button": 4,
+        "textarea": 0
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "sim",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 3890,
+      "questCharacters": 3890,
+      "originalTextSha256": "c33e08af114c9cee3b62888e35fb73997b01b799dd0528f2589041cfe0877158",
+      "questTextSha256": "c33e08af114c9cee3b62888e35fb73997b01b799dd0528f2589041cfe0877158",
+      "originalControls": {
+        "input": 3,
+        "select": 3,
+        "button": 9,
+        "textarea": 0
+      },
+      "questControls": {
+        "input": 3,
+        "select": 3,
+        "button": 9,
+        "textarea": 0
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "cache",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 4601,
+      "questCharacters": 4601,
+      "originalTextSha256": "b2084b342673b769fd7a4ab438e53a0b3459f325b987c9209e8146ea372539a2",
+      "questTextSha256": "b2084b342673b769fd7a4ab438e53a0b3459f325b987c9209e8146ea372539a2",
+      "originalControls": {
+        "input": 9,
+        "select": 20,
+        "button": 19,
+        "textarea": 0
+      },
+      "questControls": {
+        "input": 9,
+        "select": 20,
+        "button": 19,
+        "textarea": 0
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "bench",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 4520,
+      "questCharacters": 4520,
+      "originalTextSha256": "32a3d90b9284b720046330888a448e42d7b4466ec47c3771a1f07112baff67ea",
+      "questTextSha256": "32a3d90b9284b720046330888a448e42d7b4466ec47c3771a1f07112baff67ea",
+      "originalControls": {
+        "input": 2,
+        "select": 2,
+        "button": 13,
+        "textarea": 0
+      },
+      "questControls": {
+        "input": 2,
+        "select": 2,
+        "button": 13,
+        "textarea": 0
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "sbx",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 1563,
+      "questCharacters": 1563,
+      "originalTextSha256": "c3ac7f09e5c0ae251248d2d10c59868a108b1c1ea598e49d32980648f3c4d8e7",
+      "questTextSha256": "c3ac7f09e5c0ae251248d2d10c59868a108b1c1ea598e49d32980648f3c4d8e7",
+      "originalControls": {
+        "input": 1,
+        "select": 1,
+        "button": 5,
+        "textarea": 1
+      },
+      "questControls": {
+        "input": 1,
+        "select": 1,
+        "button": 5,
+        "textarea": 1
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "cmp",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 44474,
+      "questCharacters": 44474,
+      "originalTextSha256": "38b1feddaab5927fc369066d31590d74218a0d5f9e5a0f52dd06171473e5b8d7",
+      "questTextSha256": "38b1feddaab5927fc369066d31590d74218a0d5f9e5a0f52dd06171473e5b8d7",
+      "originalControls": {
+        "input": 42,
+        "select": 10,
+        "button": 10,
+        "textarea": 2
+      },
+      "questControls": {
+        "input": 42,
+        "select": 10,
+        "button": 10,
+        "textarea": 2
+      },
+      "sameHeadings": true
+    },
+    {
+      "section": "demo",
+      "sameText": true,
+      "sameControls": true,
+      "originalCharacters": 2348,
+      "questCharacters": 2348,
+      "originalTextSha256": "c4dcee4e93e70906cc3fcd6c92ef2c686d0a0833f1ea533803b9231bc62b2942",
+      "questTextSha256": "c4dcee4e93e70906cc3fcd6c92ef2c686d0a0833f1ea533803b9231bc62b2942",
+      "originalControls": {
+        "input": 1,
+        "select": 1,
+        "button": 6,
+        "textarea": 0
+      },
+      "questControls": {
+        "input": 1,
+        "select": 1,
+        "button": 6,
+        "textarea": 0
+      },
+      "sameHeadings": true
+    }
+  ],
+  "errors": {
+    "original": [],
+    "quest": []
+  }
+}

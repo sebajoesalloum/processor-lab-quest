@@ -1,0 +1,632 @@
+<div id="processor-quest" aria-label="Processor Lab Quest interface">
+  <div class="pq-app">
+    <header class="pq-header"><div class="pq-brand"><span class="pq-logo" aria-hidden="true">P<span>Q</span></span><div>Processor Lab <b>Quest</b><small>PLAY WITH IDEAS. PROVE WHAT YOU LEARN.</small></div></div><span class="pq-open-tag">All tools open · No time limit</span></header>
+    <div class="pq-navigation" role="navigation" aria-label="Processor Lab navigation"><div class="pq-route-buttons"><button class="pq-nav cursor-interaction" data-pq-route="map" aria-pressed="true">Mission map</button><button class="pq-nav cursor-interaction" data-pq-route="play" aria-pressed="false">Play a mission</button><button class="pq-nav cursor-interaction" data-pq-route="lab" aria-pressed="false">Full Lab</button><button class="pq-nav cursor-interaction" data-pq-route="notebook" aria-pressed="false">My notebook <span data-pq-note-count>0</span></button></div><span class="pq-nav-note">Explore → predict → test → explain</span></div>
+    <main class="pq-page" data-pq-screen="map">
+      <div class="pq-map-heading"><div><span class="pq-kicker">YOUR PROCESSOR EXPEDITION</span><h2>Make the machine<br><em>make sense.</em></h2><p>Take instructions apart. Move real values. Test an idea.<br>Every mission ends with something you can explain.</p></div><div class="pq-mastery"><span class="pq-mastery-mark" aria-hidden="true">✓</span><div><strong data-pq-record-count>0 / 3</strong><span>mission records collected</span><small>Progress comes from evidence.</small></div></div></div>
+      <div class="pq-map-layout"><section class="pq-world-map" aria-label="Learning worlds"><div class="pq-map-track" aria-hidden="true"></div><div class="pq-worlds" data-pq-worlds></div><div class="pq-map-key"><span class="pq-key-dot"></span> Recommended route <span>Every world is available now.</span></div></section><aside class="pq-brief" aria-label="Selected mission"><span class="pq-kicker" data-pq-world-label>WORLD 04 · PIPELINE</span><span class="pq-brief-glyph" aria-hidden="true" data-pq-world-glyph>⇢</span><h3 data-pq-world-title>Pipeline rescue</h3><p data-pq-world-description>Get the correct value to an instruction before it can continue.</p><div class="pq-objective"><span class="pq-kicker">YOU WILL BE ABLE TO</span><p data-pq-world-outcome>Explain a load-use stall and trace a forwarded value.</p></div><div class="pq-brief-checks" data-pq-world-checks></div><button class="pq-button pq-primary cursor-interaction" data-pq-start>Enter mission →</button><button class="pq-text-button cursor-interaction" data-pq-world-lab>Open the related Full Lab</button><p class="pq-brief-note">Hints, reference material, and retries are always available.</p></aside></div>
+      <div class="pq-learning-contract"><span class="pq-contract-symbol" aria-hidden="true">?</span><div><h3>Play until you can explain why.</h3><p>Predict a result, inspect the real trace, and explain the cause. The notebook records your evidence.</p></div><button class="pq-text-button cursor-interaction" data-pq-route="lab">Explore all original lab tools →</button></div>
+    </main>
+    <main class="pq-page" data-pq-screen="play" hidden>
+      <div class="pq-mission-heading"><div><span class="pq-kicker" data-pq-mission-kicker>WORLD 04 · PIPELINE RESCUE</span><h2 data-pq-mission-title>Deliver the right value.</h2><p data-pq-mission-subtitle>Can forwarding remove every stall? Make a prediction, then test it.</p></div><label class="pq-field">Choose a mission<select data-pq-mission class="cursor-interaction"><option value="pipeline">Pipeline rescue</option><option value="cache">Cache collision</option><option value="subleq">One-instruction escape</option></select></label></div>
+      <div class="pq-stepper" aria-label="Mission evidence checks"><span data-pq-check="predict"><b>1</b> Predict</span><i aria-hidden="true"></i><span data-pq-check="observe"><b>2</b> Observe</span><i aria-hidden="true"></i><span data-pq-check="explain"><b>3</b> Explain</span><strong data-pq-evidence-count>0 / 3 evidence checks</strong></div>
+      <div class="pq-play-grid"><section class="pq-play-area" aria-label="Interactive experiment"><div class="pq-play-toolbar"><div><span class="pq-live-dot"></span><strong data-pq-board-label>Processor floor</strong><span class="pq-label">SIMULATED</span></div><div class="pq-board-settings" data-pq-settings></div></div><div data-pq-board class="pq-board"></div><div class="pq-controls"><div class="pq-button-group"><button class="pq-button cursor-interaction" data-pq-back>← Back</button><button class="pq-button pq-primary cursor-interaction" data-pq-next>Step cycle →</button><button class="pq-button cursor-interaction" data-pq-finish>Run to end</button></div><span class="pq-position" data-pq-position>Cycle 3 / 11</span></div><div class="pq-observation" aria-live="polite"><span class="pq-observation-icon" aria-hidden="true">↳</span><div><h3 data-pq-observe-title>Watch the dependency.</h3><p data-pq-observe-text>The add needs t0 before it can execute.</p></div></div><details class="pq-evidence"><summary class="cursor-interaction">Inspect the evidence: trace, values & model assumptions</summary><div data-pq-evidence></div></details></section>
+      <aside class="pq-challenge" aria-label="Mission questions"><span class="pq-kicker">THINK LIKE A COMPUTER ARCHITECT</span><h3 data-pq-question>When can the add enter EX?</h3><p class="pq-question-context" data-pq-question-context>Forwarding is on. The load enters IF in cycle 1.</p><div class="pq-answer-options" data-pq-answers></div><p class="pq-feedback" data-pq-feedback aria-live="polite">Pick a prediction. You can revise it after inspecting the trace.</p><details class="pq-hint"><summary class="cursor-interaction">Need a hint?</summary><p data-pq-hint>The load reads data in MEM. The next instruction cannot use a value before it exists.</p></details><div class="pq-explain-question"><span class="pq-kicker">MAKE THE CAUSE CLEAR</span><label class="pq-field"><span data-pq-why-label>Why does one load-use stall remain?</span><select data-pq-explanation class="cursor-interaction"></select></label><p class="pq-explain-feedback" data-pq-explain-feedback aria-live="polite"></p></div><button class="pq-button pq-record cursor-interaction" data-pq-record aria-describedby="pq-record-hint">Record evidence in notebook</button><p id="pq-record-hint" class="pq-record-hint" data-pq-record-hint aria-live="polite">Complete the three evidence checks to record this case.</p><button class="pq-text-button cursor-interaction" data-pq-related>Go deeper in the complete lab →</button></aside></div>
+      <div class="pq-transfer"><span class="pq-transfer-symbol" aria-hidden="true">↺</span><div><h3>Try a new case.</h3><p data-pq-transfer-description>Change the first loaded value. Does the schedule change, or only the answer?</p></div><label class="pq-field pq-transfer-field"><span data-pq-input-label>First memory value</span><input type="number" min="-20" max="20" value="7" data-pq-input></label><button class="pq-button cursor-interaction" data-pq-transfer>Test this case</button></div>
+    </main>
+    <main class="pq-page" data-pq-screen="notebook" hidden>
+      <div class="pq-mission-heading"><div><span class="pq-kicker">MY RESEARCH NOTEBOOK</span><h2>Keep the proof.</h2><p>A record of predictions, observed values, and explanations you have checked.</p></div><button class="pq-button cursor-interaction" data-pq-export>Export notebook JSON ↓</button></div><div data-pq-notes class="pq-notes"></div><div class="pq-learning-contract"><span class="pq-contract-symbol" aria-hidden="true">≡</span><div><h3>Need a complete lab report?</h3><p>Compare & Reports keeps the original CSV, JSON, and HTML exports, settings, formulas, and assumptions.</p></div><button class="pq-button cursor-interaction" data-pq-reports>Open Compare & Reports →</button></div>
+    </main>
+    <section class="pq-full-lab" data-pq-screen="lab" hidden aria-label="Complete original simulator">
+      <div class="pq-lab-heading">
+        <div class="pq-studio-copy"><span class="pq-kicker">THE FULL LAB · YOUR ARCHITECTURE STUDIO</span><h2>Big ideas. <em>Hands-on discoveries.</em></h2><p>Build a processor. Follow an instruction. See the theory come alive.</p><div class="pq-studio-tags"><span><i></i>11 places to explore</span><span>4 processor models</span><span>Learn at your pace</span></div></div>
+        <div class="pq-studio-art" aria-hidden="true"><div class="pq-art-orbit"></div><span class="pq-art-node pq-art-memory">MEMORY <b>01 10 01</b></span><span class="pq-art-node pq-art-output">OUTPUT <b>42</b></span><div class="pq-art-cpu"><span>PROCESSOR</span><strong>Let's think.</strong><div><i></i><i></i><i></i><i></i></div></div></div>
+      </div>
+      <div class="pq-lab-toolbar"><span class="pq-lab-breadcrumb">Full Lab <span aria-hidden="true">/</span> <strong data-pq-section-group>Understand</strong></span><div class="pq-lab-selectors"><label class="pq-field"><span>Jump to section</span><select data-pq-lab-section class="cursor-interaction" aria-label="Lab section"></select></label><label class="pq-field"><span>Reading detail</span><select data-pq-detail aria-label="Reading detail" class="cursor-interaction"><option value="all">All information</option><option value="b">Beginner</option><option value="i">Intermediate</option><option value="p">Pro</option></select></label></div></div>
+      <div class="pq-lab-workspace">
+        <aside class="pq-library" aria-label="Full Lab library">
+          <details open data-pq-library-panel><summary class="cursor-interaction">Explore the lab <span>11 sections · choose your next discovery</span></summary>
+            <div class="pq-library-search"><label for="pq-lab-search">Find a section</label><div><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input id="pq-lab-search" type="search" placeholder="Try pipeline, cache, ISA…" data-pq-library-search autocomplete="off"><button type="button" data-pq-library-clear aria-label="Clear section search" hidden>×</button></div><p data-pq-search-status role="status" aria-live="polite"></p></div>
+            <div data-pq-library role="navigation" aria-label="All academic sections"></div>
+          </details>
+          <div class="pq-page-index"><label class="pq-field">On this page<select data-pq-page-index class="cursor-interaction" aria-label="Jump to a heading on this lab page"><option value="">Jump to a heading…</option></select></label><p class="pq-index-status" data-pq-index-status aria-live="polite">Use the headings to find a topic.</p></div>
+          <div class="pq-library-note"><span aria-hidden="true">✦</span><strong>Curiosity has no prerequisites.</strong><p>Every tool is open. Choose a reading level that feels right, and explore from there.</p></div>
+        </aside>
+        <div class="pq-lab-main">
+          <div class="pq-section-intro"><span class="pq-section-icon" data-pq-section-icon aria-hidden="true"></span><div><span class="pq-kicker" data-pq-section-number>SECTION 01 / 11</span><h2 data-pq-section-title>Overview</h2><p data-pq-section-description></p></div></div>
+          <div class="pq-section-tip"><span aria-hidden="true">↳</span><p><strong>A place to start</strong><span data-pq-section-tip></span></p></div>
+          <!-- LEGACY_CONTENT -->
+          <div role="navigation" class="pq-section-pagination" aria-label="Browse lab sections"><button class="pq-button" data-pq-section-prev>← Previous section</button><span data-pq-section-position>1 of 11 sections</span><button class="pq-button" data-pq-section-next>Next section →</button></div>
+        </div>
+      </div>
+    </section>
+    <footer class="pq-footer"><span>Processor Lab · Created by Student Seba Joe Salloum</span><span>Educational models · Simulated results · Assumptions stay visible</span><button class="pq-text-button cursor-interaction" data-pq-intro hidden>Watch original introduction</button></footer>
+  </div>
+</div>
+<style>
+#processor-quest{width:100%;}
+#processor-quest .pq-app{--pq-bg:light-dark(#f8f6ef,#171622);--pq-surface:light-dark(#fffefa,#222031);--pq-ink:light-dark(#2d263c,#f3eefe);--pq-muted:light-dark(#706779,#b9b1c9);--pq-line:light-dark(#e6dfeb,#40374f);--pq-purple:light-dark(#7042bc,#c2a0ff);--pq-soft:light-dark(#eee4ff,#37284d);--pq-mint:light-dark(#e2efcf,#2a3c29);--pq-green:light-dark(#396131,#b4d79e);--pq-coral:light-dark(#fae1d4,#4b302a);--pq-orange:light-dark(#92512f,#edb194);--pq-yellow:light-dark(#f7eebd,#443d22);--pq-yellow-ink:light-dark(#806618,#ead785);--pq-button:light-dark(#7042bc,#b992f5);--pq-button-ink:light-dark(#ffffff,#241735);background:var(--pq-bg);color:var(--pq-ink);font:14px/1.55 "Segoe UI",Arial,sans-serif;border:1px solid var(--pq-line);border-radius:18px;overflow:clip;}
+#processor-quest .pq-app *,#processor-quest .pq-app *::before,#processor-quest .pq-app *::after{box-sizing:border-box;}
+#processor-quest [hidden]{display:none!important;}
+#processor-quest .pq-app h2,#processor-quest .pq-app h3,#processor-quest .pq-app p{margin:0;}
+#processor-quest .pq-app h2{font-size:30px;letter-spacing:-.9px;line-height:1.2;font-weight:700;}
+#processor-quest .pq-app h3{font-size:16px;line-height:1.4;font-weight:650;}
+#processor-quest .pq-app button,#processor-quest .pq-app select,#processor-quest .pq-app input{font:inherit;color:inherit;}
+#processor-quest .pq-app button:focus-visible,#processor-quest .pq-app summary:focus-visible,#processor-quest .pq-app input:focus-visible,#processor-quest .pq-app select:focus-visible{outline:3px solid var(--pq-purple);outline-offset:3px;}
+#processor-quest .pq-app button:disabled{opacity:.48;cursor:default;}
+#processor-quest .pq-app code{font:12px/1.6 Consolas,"Courier New",monospace;background:none;color:inherit;overflow-wrap:anywhere;white-space:normal;}
+#processor-quest .pq-header{padding:21px 116px 19px 24px;background:var(--pq-surface);display:flex;justify-content:space-between;gap:20px;align-items:center;border-bottom:1px solid var(--pq-line);}
+#processor-quest .pq-brand{display:flex;gap:12px;align-items:center;font-size:18px;font-weight:600;letter-spacing:-.4px;}
+#processor-quest .pq-brand b{font-weight:700;color:var(--pq-purple);}
+#processor-quest .pq-brand small{display:block;font-size:11px;letter-spacing:1px;font-weight:500;color:var(--pq-muted);margin-top:2px;}
+#processor-quest .pq-logo{position:relative;display:flex;align-items:center;justify-content:center;width:43px;height:44px;border-radius:13px;background:var(--pq-button);color:var(--pq-button-ink);font:650 20px Consolas,monospace;transform:rotate(-6deg);flex-shrink:0;box-shadow:3px 4px 0 var(--pq-soft);}
+#processor-quest .pq-logo span{font-size:14px;margin-top:10px;margin-left:-2px;}
+#processor-quest .pq-open-tag{font-size:11px;color:var(--pq-green);background:var(--pq-mint);border-radius:20px;padding:7px 10px;text-align:center;}
+#processor-quest .pq-navigation{padding:11px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--pq-surface);border-bottom:1px solid var(--pq-line);}
+#processor-quest .pq-route-buttons{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+#processor-quest .pq-nav{background:none;border:0;border-radius:8px;padding:9px 12px;font-size:12px;font-weight:550;min-height:38px;}
+#processor-quest .pq-nav[aria-pressed="true"]{background:var(--pq-soft);color:var(--pq-purple);}
+#processor-quest .pq-nav span{font:11px Consolas,monospace;background:var(--pq-bg);border-radius:4px;padding:2px 5px;margin-left:4px;}
+#processor-quest .pq-nav-note{font-size:11px;color:var(--pq-muted);}
+#processor-quest .pq-page{padding:30px 27px;}
+#processor-quest .pq-kicker{display:block;font-size:11px;font-weight:650;letter-spacing:1.1px;line-height:1.5;color:var(--pq-purple);}
+#processor-quest .pq-map-heading{display:flex;align-items:center;justify-content:space-between;gap:25px;margin-bottom:26px;}
+#processor-quest .pq-map-heading h2{font-size:43px;line-height:1.12;margin:10px 0 13px;letter-spacing:-1.5px;}
+#processor-quest .pq-map-heading h2 em{font-style:normal;color:var(--pq-purple);}
+#processor-quest .pq-map-heading p{font-size:13px;color:var(--pq-muted);line-height:1.75;}
+#processor-quest .pq-mastery{display:flex;gap:14px;align-items:center;padding-right:12px;}
+#processor-quest .pq-mastery-mark{display:grid;place-items:center;font:27px Consolas,monospace;width:60px;height:65px;background:var(--pq-mint);color:var(--pq-green);clip-path:polygon(10% 0,90% 0,100% 65%,50% 100%,0 65%);}
+#processor-quest .pq-mastery strong{font-size:24px;letter-spacing:-.8px;font-weight:650;display:block;}
+#processor-quest .pq-mastery span:not(.pq-mastery-mark){font-size:12px;display:block;}
+#processor-quest .pq-mastery small{font-size:11px;color:var(--pq-muted);display:block;margin-top:5px;}
+#processor-quest .pq-map-layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(240px,1fr);gap:20px;align-items:stretch;}
+#processor-quest .pq-world-map{position:relative;min-width:0;border:1px solid var(--pq-line);border-radius:15px;background-color:var(--pq-surface);background-image:radial-gradient(var(--pq-line) .8px,transparent .8px);background-size:17px 17px;padding:27px 20px 17px;}
+#processor-quest .pq-map-track{position:absolute;top:66px;bottom:80px;left:50%;border-left:2px dashed var(--pq-line);}
+#processor-quest .pq-worlds{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 24px;}
+#processor-quest .pq-world{position:relative;display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid var(--pq-line);background:var(--pq-surface);padding:15px;border-radius:12px;min-height:141px;box-shadow:0 4px 0 var(--pq-line);gap:7px;}
+#processor-quest .pq-world:nth-child(even){transform:translateY(17px);}
+#processor-quest .pq-world[aria-pressed="true"]{border:2px solid var(--pq-purple);padding:14px;box-shadow:0 4px 0 var(--pq-purple);}
+#processor-quest .pq-world-top{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;}
+#processor-quest .pq-world-number{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--pq-soft);color:var(--pq-purple);font:600 15px Consolas,monospace;}
+#processor-quest .pq-world:nth-child(3n+1) .pq-world-number{background:var(--pq-mint);color:var(--pq-green);}
+#processor-quest .pq-world:nth-child(3n+2) .pq-world-number{background:var(--pq-coral);color:var(--pq-orange);}
+#processor-quest .pq-world-mode{font-size:11px;color:var(--pq-muted);}
+#processor-quest .pq-world strong{font-size:14px;line-height:1.35;font-weight:650;}
+#processor-quest .pq-world small{font-size:11px;color:var(--pq-muted);line-height:1.5;}
+#processor-quest .pq-map-key{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:40px;font-size:11px;color:var(--pq-muted);}
+#processor-quest .pq-map-key>span:last-child{margin-left:auto;}
+#processor-quest .pq-key-dot{height:7px;width:7px;border-radius:50%;background:var(--pq-purple);}
+#processor-quest .pq-brief{border:1px solid var(--pq-line);border-radius:15px;background:var(--pq-soft);padding:24px;display:flex;flex-direction:column;align-items:flex-start;min-width:0;}
+#processor-quest .pq-brief-glyph{display:grid;place-items:center;width:65px;height:65px;border:1px solid var(--pq-purple);border-radius:18px;background:var(--pq-surface);font:32px Consolas,monospace;color:var(--pq-purple);margin:20px 0 18px;box-shadow:4px 4px 0 color-mix(in srgb,var(--pq-purple) 17%,transparent);}
+#processor-quest .pq-brief h3{font-size:24px;letter-spacing:-.6px;}
+#processor-quest .pq-brief>p{font-size:12px;color:var(--pq-muted);margin-top:10px;line-height:1.7;}
+#processor-quest .pq-objective{padding:17px 0;margin:17px 0 9px;border-top:1px solid color-mix(in srgb,var(--pq-purple) 20%,transparent);border-bottom:1px solid color-mix(in srgb,var(--pq-purple) 20%,transparent);width:100%;}
+#processor-quest .pq-objective .pq-kicker{font-size:11px;letter-spacing:.6px;}
+#processor-quest .pq-objective p{font-size:13px;margin-top:7px;}
+#processor-quest .pq-brief-checks{display:grid;gap:8px;font-size:12px;margin:9px 0 23px;}
+#processor-quest .pq-brief-checks span{display:flex;gap:8px;align-items:baseline;}
+#processor-quest .pq-brief-checks b{color:var(--pq-purple);font-weight:500;}
+#processor-quest .pq-brief>.pq-button{width:100%;margin-top:auto;}
+#processor-quest .pq-brief>.pq-text-button{margin-top:12px;align-self:center;}
+#processor-quest .pq-brief .pq-brief-note{font-size:11px;margin-top:15px;}
+#processor-quest .pq-button{display:inline-flex;justify-content:center;align-items:center;gap:7px;min-height:38px;border:1px solid var(--pq-line);background:var(--pq-surface);border-radius:8px;padding:9px 13px;font-size:12px;font-weight:550;line-height:1.4;}
+#processor-quest .pq-primary{background:var(--pq-button);border-color:var(--pq-button);color:var(--pq-button-ink)!important;box-shadow:0 3px 0 color-mix(in srgb,var(--pq-button) 55%,var(--pq-ink));}
+#processor-quest .pq-text-button{background:none;border:0;font-size:11px;color:var(--pq-purple)!important;padding:5px 0;text-align:left;line-height:1.6;}
+#processor-quest .pq-learning-contract{display:flex;align-items:center;gap:15px;border-top:1px solid var(--pq-line);padding-top:24px;margin-top:28px;}
+#processor-quest .pq-contract-symbol{font:30px Consolas,monospace;color:var(--pq-purple);padding:3px 10px;}
+#processor-quest .pq-learning-contract h3{font-size:14px;}
+#processor-quest .pq-learning-contract p{font-size:12px;color:var(--pq-muted);margin-top:6px;line-height:1.7;}
+#processor-quest .pq-learning-contract>.pq-text-button,#processor-quest .pq-learning-contract>.pq-button{margin-left:auto;max-width:200px;flex-shrink:0;}
+#processor-quest .pq-mission-heading{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-bottom:23px;}
+#processor-quest .pq-mission-heading h2{margin-top:9px;}
+#processor-quest .pq-mission-heading p{font-size:12px;color:var(--pq-muted);margin-top:10px;}
+#processor-quest .pq-field{display:grid;gap:6px;font-size:11px;color:var(--pq-muted);min-width:0;}
+#processor-quest .pq-field select,#processor-quest .pq-field input{border:1px solid var(--pq-line);background:var(--pq-surface);color:var(--pq-ink);border-radius:7px;padding:8px 9px;max-width:100%;font-size:12px;min-width:0;}
+#processor-quest .pq-stepper{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 22px;}
+#processor-quest .pq-stepper>span{display:flex;gap:7px;align-items:center;font-size:12px;color:var(--pq-muted);}
+#processor-quest .pq-stepper b{display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--pq-line);border-radius:50%;font:12px Consolas,monospace;color:var(--pq-muted);background:var(--pq-surface);}
+#processor-quest .pq-stepper>span.pq-check-done{color:var(--pq-green);}
+#processor-quest .pq-check-done b{background:var(--pq-mint);color:var(--pq-green);border-color:transparent;}
+#processor-quest .pq-stepper>i{height:1px;width:25px;background:var(--pq-line);}
+#processor-quest .pq-stepper>strong{font-size:11px;font-weight:500;color:var(--pq-muted);margin-left:auto;}
+#processor-quest .pq-play-grid{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(250px,1fr);gap:18px;align-items:start;}
+#processor-quest .pq-play-area{background:var(--pq-surface);border:1px solid var(--pq-line);border-radius:13px;min-width:0;}
+#processor-quest .pq-play-toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;padding:15px 17px;border-bottom:1px solid var(--pq-line);}
+#processor-quest .pq-play-toolbar>div:first-child{display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+#processor-quest .pq-live-dot{height:7px;width:7px;border-radius:50%;background:var(--pq-green);}
+#processor-quest .pq-play-toolbar strong{font-size:12px;font-weight:600;}
+#processor-quest .pq-label{font-size:11px;color:var(--pq-muted);border-left:1px solid var(--pq-line);padding-left:8px;}
+#processor-quest .pq-board-settings{display:flex;gap:8px;align-items:center;font-size:11px;flex-wrap:wrap;}
+#processor-quest .pq-board-settings label{display:flex;align-items:center;gap:6px;}
+#processor-quest .pq-board-settings input{accent-color:var(--pq-purple);width:15px;height:15px;}
+#processor-quest .pq-small-select{background:var(--pq-bg);border:1px solid var(--pq-line);border-radius:5px;padding:5px;font-size:11px!important;max-width:100%;}
+#processor-quest .pq-board{padding:23px 17px 15px;background-image:radial-gradient(var(--pq-line) .75px,transparent .75px);background-size:16px 16px;min-height:345px;}
+#processor-quest .pq-stations{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:stretch;}
+#processor-quest .pq-station{padding:10px 6px 11px;border:1px solid var(--pq-line);border-radius:9px;background:var(--pq-bg);text-align:center;min-height:135px;min-width:0;}
+#processor-quest .pq-station-heading{display:block;font:650 15px Consolas,monospace;}
+#processor-quest .pq-station-name{display:block;font-size:11px;color:var(--pq-muted);margin:5px 0 13px;}
+#processor-quest .pq-token{background:var(--pq-surface);border:1px solid var(--pq-line);border-radius:6px;padding:6px 2px;font-size:11px;min-height:45px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;box-shadow:0 3px 0 var(--pq-line);}
+#processor-quest .pq-token small{font-size:11px;}
+#processor-quest .pq-station-active{background:var(--pq-soft);border-color:var(--pq-purple);}
+#processor-quest .pq-token-wait{background:var(--pq-yellow);color:var(--pq-yellow-ink);border-color:transparent;}
+#processor-quest .pq-token-bubble{border-style:dashed;color:var(--pq-muted);box-shadow:none;background:var(--pq-bg);}
+#processor-quest .pq-value-lane{display:flex;align-items:center;gap:10px;justify-content:center;margin:24px 0 18px;font-size:11px;flex-wrap:wrap;}
+#processor-quest .pq-value-source{color:var(--pq-muted);font:11px Consolas,monospace;}
+#processor-quest .pq-value-wire{height:2px;flex:1;min-width:10px;background:var(--pq-line);}
+#processor-quest .pq-value-packet{display:inline-flex;align-items:center;gap:8px;border-radius:7px;padding:8px 13px;background:var(--pq-soft);color:var(--pq-purple);font:650 16px Consolas,monospace;box-shadow:0 3px 0 color-mix(in srgb,var(--pq-purple) 20%,transparent);}
+#processor-quest .pq-value-wire.pq-wire-active{background:var(--pq-purple);}
+#processor-quest .pq-program-strip{display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid var(--pq-line);padding-top:13px;}
+#processor-quest .pq-code-pill{font:11px/1.6 Consolas,monospace;display:inline-flex;gap:5px;padding:4px 7px;background:var(--pq-bg);border:1px solid var(--pq-line);border-radius:5px;}
+#processor-quest .pq-code-pill.pq-code-now{background:var(--pq-soft);border-color:var(--pq-purple);}
+#processor-quest .pq-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:15px 17px;border-top:1px solid var(--pq-line);}
+#processor-quest .pq-button-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+#processor-quest .pq-position{font-size:11px;color:var(--pq-muted);font-variant-numeric:tabular-nums;}
+#processor-quest .pq-observation{display:flex;gap:12px;padding:18px;background:var(--pq-mint);color:var(--pq-green);}
+#processor-quest .pq-observation h3{font-size:14px;}
+#processor-quest .pq-observation p{font-size:12px;margin-top:5px;line-height:1.7;}
+#processor-quest .pq-observation-icon{font:27px Consolas,monospace;}
+#processor-quest .pq-evidence{padding:14px 17px;font-size:12px;color:var(--pq-muted);}
+#processor-quest .pq-evidence summary{color:var(--pq-ink);font-size:12px;}
+#processor-quest .pq-evidence p{margin-top:12px;font-size:12px;line-height:1.7;}
+#processor-quest .pq-evidence-table-wrap{overflow-x:auto;margin-top:13px;}
+#processor-quest .pq-evidence-table{border-collapse:collapse;width:100%;font-size:11px;text-align:left;}
+#processor-quest .pq-evidence-table th,#processor-quest .pq-evidence-table td{border-bottom:1px solid var(--pq-line);padding:7px 5px;font-weight:400;white-space:nowrap;}
+#processor-quest .pq-evidence-table thead th{font-weight:600;}
+#processor-quest .pq-challenge{padding:21px 19px;background:var(--pq-surface);border:1px solid var(--pq-line);border-radius:13px;min-width:0;}
+#processor-quest .pq-challenge>.pq-kicker{font-size:11px;letter-spacing:.8px;}
+#processor-quest .pq-challenge>h3{font-size:20px;letter-spacing:-.3px;margin-top:12px;}
+#processor-quest .pq-question-context{font-size:12px;color:var(--pq-muted);margin-top:9px!important;}
+#processor-quest .pq-answer-options{display:grid;gap:8px;margin-top:18px;}
+#processor-quest .pq-answer{border:1px solid var(--pq-line);border-radius:7px;background:var(--pq-bg);padding:10px 12px;text-align:left;font-size:12px;display:flex;gap:9px;align-items:center;}
+#processor-quest .pq-answer .pq-radio{width:13px;height:13px;border:1px solid var(--pq-muted);border-radius:50%;flex-shrink:0;}
+#processor-quest .pq-answer[aria-pressed="true"]{background:var(--pq-soft);border-color:var(--pq-purple);}
+#processor-quest .pq-answer[aria-pressed="true"] .pq-radio{background:var(--pq-purple);border-color:var(--pq-purple);box-shadow:inset 0 0 0 3px var(--pq-soft);}
+#processor-quest .pq-feedback{font-size:12px;color:var(--pq-muted);margin-top:12px!important;line-height:1.7;min-height:58px;}
+#processor-quest .pq-feedback.pq-feedback-correct{color:var(--pq-green);}
+#processor-quest .pq-hint{font-size:11px;color:var(--pq-muted);margin-top:11px;}
+#processor-quest .pq-hint summary{color:var(--pq-purple);}
+#processor-quest .pq-hint p{margin-top:8px;line-height:1.7;}
+#processor-quest .pq-explain-question{border-top:1px solid var(--pq-line);margin-top:19px;padding-top:18px;}
+#processor-quest .pq-explain-question>.pq-field{margin-top:11px;font-size:12px;color:var(--pq-ink);}
+#processor-quest .pq-explain-question select{width:100%;font-size:11px;}
+#processor-quest .pq-explain-feedback{font-size:11px;margin-top:9px!important;color:var(--pq-muted);line-height:1.6;}
+#processor-quest .pq-record{width:100%;margin-top:16px;background:var(--pq-ink);color:var(--pq-surface)!important;border-color:var(--pq-ink);}
+#processor-quest .pq-record-hint{font-size:11px;color:var(--pq-muted);margin-top:9px!important;line-height:1.6;}
+#processor-quest .pq-challenge>.pq-text-button{margin-top:13px;}
+#processor-quest .pq-transfer{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:23px;padding:20px 0 0;border-top:1px solid var(--pq-line);}
+#processor-quest .pq-transfer-symbol{font:32px Consolas,monospace;color:var(--pq-purple);}
+#processor-quest .pq-transfer>div{flex:1;min-width:150px;}
+#processor-quest .pq-transfer h3{font-size:15px;}
+#processor-quest .pq-transfer p{font-size:12px;color:var(--pq-muted);margin-top:5px;max-width:470px;}
+#processor-quest .pq-transfer-field{width:135px;}
+#processor-quest .pq-transfer-field input{width:100%;}
+#processor-quest .pq-cache-request{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;margin-bottom:20px;}
+#processor-quest .pq-memory-packet{display:flex;gap:12px;align-items:center;padding:14px 16px;background:var(--pq-coral);border-radius:10px;box-shadow:0 4px 0 color-mix(in srgb,var(--pq-orange) 25%,transparent);}
+#processor-quest .pq-memory-packet>strong{font:600 24px Consolas,monospace;color:var(--pq-orange);}
+#processor-quest .pq-memory-packet span{display:block;font-size:11px;color:var(--pq-orange);}
+#processor-quest .pq-cache-outcome{font-size:12px;font-weight:600;padding:7px 10px;border-radius:6px;background:var(--pq-yellow);color:var(--pq-yellow-ink);}
+#processor-quest .pq-cache-outcome.pq-is-hit{background:var(--pq-mint);color:var(--pq-green);}
+#processor-quest .pq-cache-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 20px;}
+#processor-quest .pq-cache-slot{padding:15px;background:var(--pq-surface);border:2px dashed var(--pq-line);border-radius:9px;min-height:100px;}
+#processor-quest .pq-cache-slot.pq-slot-current{border:2px solid var(--pq-purple);background:var(--pq-soft);}
+#processor-quest .pq-cache-slot small{display:block;font-size:11px;color:var(--pq-muted);margin-bottom:5px;}
+#processor-quest .pq-cache-slot strong{font-size:17px;font-weight:600;}
+#processor-quest .pq-cache-slot code{display:block;margin-top:6px;font-size:11px;}
+#processor-quest .pq-cache-board-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;color:var(--pq-muted);flex-wrap:wrap;}
+#processor-quest .pq-cache-sequence{display:flex;gap:5px;flex-wrap:wrap;}
+#processor-quest .pq-cache-sequence span{display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--pq-line);background:var(--pq-surface);border-radius:5px;font:11px Consolas,monospace;color:var(--pq-muted);}
+#processor-quest .pq-cache-sequence .pq-read-done{background:var(--pq-soft);border-color:var(--pq-soft);color:var(--pq-purple);}
+#processor-quest .pq-cache-sequence .pq-read-now{background:var(--pq-button);color:var(--pq-button-ink);border-color:var(--pq-button);}
+#processor-quest .pq-cache-counters{display:flex;gap:25px;margin:20px 0 4px;flex-wrap:wrap;}
+#processor-quest .pq-cache-counters span{font-size:11px;color:var(--pq-muted);}
+#processor-quest .pq-cache-counters b{font:600 22px Consolas,monospace;color:var(--pq-ink);margin-right:5px;}
+#processor-quest .pq-sq-board{display:grid;grid-template-columns:1fr auto 1fr;gap:17px;align-items:center;padding:17px 0;}
+#processor-quest .pq-sq-value{padding:23px 14px;background:var(--pq-soft);border-radius:12px;text-align:center;}
+#processor-quest .pq-sq-value span{font-size:12px;color:var(--pq-muted);display:block;}
+#processor-quest .pq-sq-value strong{display:block;font:600 44px Consolas,monospace;color:var(--pq-purple);margin:9px 0;}
+#processor-quest .pq-sq-arrow{font-size:28px;color:var(--pq-purple);}
+#processor-quest .pq-branch-path{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--pq-line);padding:20px 0 7px;flex-wrap:wrap;}
+#processor-quest .pq-branch-path strong{font:600 22px Consolas,monospace;color:var(--pq-green);}
+#processor-quest .pq-branch-path span{font-size:12px;color:var(--pq-muted);}
+#processor-quest .pq-notes{min-height:280px;}
+#processor-quest .pq-notebook-empty{padding:40px 25px;background:var(--pq-surface);border:1px dashed var(--pq-line);border-radius:14px;}
+#processor-quest .pq-notebook-empty h3{font-size:20px;margin-bottom:12px;}
+#processor-quest .pq-notebook-empty p{font-size:13px;color:var(--pq-muted);margin-bottom:20px;max-width:570px;}
+#processor-quest .pq-note{background:var(--pq-surface);border:1px solid var(--pq-line);border-radius:12px;padding:21px;margin-bottom:14px;}
+#processor-quest .pq-note .pq-kicker{color:var(--pq-green);}
+#processor-quest .pq-note h3{font-size:18px;margin:7px 0 11px;}
+#processor-quest .pq-note dl{display:grid;grid-template-columns:100px 1fr;gap:8px 15px;font-size:12px;margin:0;}
+#processor-quest .pq-note dt{color:var(--pq-muted);}
+#processor-quest .pq-note dd{margin:0;overflow-wrap:anywhere;}
+#processor-quest .pq-lab-heading{padding:25px 27px;background:var(--pq-bg);border-bottom:1px solid var(--pq-line);display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+#processor-quest .pq-lab-heading h2{font-size:25px;margin-top:7px;}
+#processor-quest .pq-lab-heading p{font-size:12px;color:var(--pq-muted);margin-top:8px;}
+#processor-quest .pq-lab-selectors{display:flex;gap:12px;flex-wrap:wrap;}
+#processor-quest .pq-lab-workspace{display:grid;grid-template-columns:195px minmax(0,1fr);align-items:start;gap:0;}
+#processor-quest .pq-library{padding:21px 13px;background:var(--pq-surface);border-right:1px solid var(--pq-line);align-self:stretch;min-width:0;}
+#processor-quest .pq-library>details>summary{font-size:13px;font-weight:650;}
+#processor-quest .pq-library>details>summary>span{font-size:11px;font-weight:400;color:var(--pq-muted);display:block;padding-left:16px;margin-top:4px;}
+#processor-quest .pq-library-group{margin-top:22px;}
+#processor-quest .pq-library-group h3{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--pq-muted);margin-bottom:8px;}
+#processor-quest .pq-library-link{display:flex;align-items:baseline;gap:8px;width:100%;text-align:left;min-height:40px;background:none;border:1px solid transparent;border-radius:8px;padding:9px 7px;font-size:12px;line-height:1.55;}
+#processor-quest .pq-library-link>span{font:11px Consolas,monospace;color:var(--pq-muted);flex-shrink:0;}
+#processor-quest .pq-library-link[aria-current="page"]{background:var(--pq-soft);color:var(--pq-purple);border-color:color-mix(in srgb,var(--pq-purple) 20%,transparent);}
+#processor-quest .pq-library-link[aria-current="page"]>span{color:var(--pq-purple);}
+#processor-quest .pq-page-index{border-top:1px solid var(--pq-line);margin-top:25px;padding-top:20px;}
+#processor-quest .pq-page-index select{width:100%;font-size:11px;padding:8px 5px;}
+#processor-quest .pq-index-status{font-size:11px;color:var(--pq-muted);line-height:1.65;margin-top:8px!important;}
+#processor-quest .pq-library-note{border-top:1px solid var(--pq-line);margin-top:23px;padding-top:18px;}
+#processor-quest .pq-library-note strong{font-size:11px;font-weight:600;}
+#processor-quest .pq-library-note p{font-size:11px;color:var(--pq-muted);line-height:1.7;margin-top:6px;}
+#processor-quest .pq-footer{padding:18px 25px;border-top:1px solid var(--pq-line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--pq-muted);background:var(--pq-surface);}
+#processor-quest .pq-footer button{font-size:11px;}
+#processor-quest .pq-app>#intro{position:fixed;inset:0;z-index:1000;background:var(--pq-bg);color:var(--pq-ink);overflow:auto;padding:24px 20px 32px;}
+#processor-quest .pq-app>#intro .w{max-width:940px;margin:0 auto;}
+#processor-quest .pq-app>#intro h1{font-size:30px;line-height:1.25;letter-spacing:-.7px;margin:0 0 8px;}
+#processor-quest .pq-app>#intro .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:15px 0;}
+#processor-quest .pq-app>#intro .mu{color:var(--pq-muted);font-size:13px;}
+#processor-quest .pq-app>#intro .cr{font-size:12px;background:var(--pq-soft)!important;color:var(--pq-purple)!important;border-radius:20px;padding:7px 12px;}
+#processor-quest .pq-app>#intro .vc{background:var(--pq-surface);border:1px solid var(--pq-line);border-radius:15px;padding:14px;margin-top:23px;}
+#processor-quest .pq-app>#intro #introv{display:block;width:100%;max-height:68vh;aspect-ratio:856/480;background:#000;border-radius:10px;object-fit:contain;}
+#processor-quest .pq-app>#intro #intro-msg{font-size:12px;line-height:1.6;}
+#processor-quest .pq-app>#intro .row>.pq-button:last-child{margin-left:auto;background:var(--pq-button);border-color:var(--pq-button);color:var(--pq-button-ink);}
+#processor-quest #pq-legacy{--bg:var(--pq-bg);--card:var(--pq-surface);--tx:var(--pq-ink);--mu:var(--pq-muted);--pr:var(--pq-purple);--hl:var(--pq-purple);--ch:var(--pq-purple);--bd:var(--pq-line);--lav:var(--pq-soft);--ok:var(--pq-green);--bad:light-dark(#a23537,#f5a5a5);color:var(--pq-ink);background:var(--pq-bg);min-width:0;}
+#processor-quest #pq-legacy>header{display:none;}
+#processor-quest #pq-legacy #v{margin:0;max-width:none;padding:22px 25px 35px;}
+#processor-quest #pq-legacy .card{background:var(--pq-surface);border-color:var(--pq-line);border-radius:12px;box-shadow:0 3px 0 color-mix(in srgb,var(--pq-line) 50%,transparent);}
+#processor-quest #pq-legacy h1{font-size:28px;line-height:1.3;letter-spacing:-.7px;margin:7px 0 16px;}
+#processor-quest #pq-legacy h2{font-size:21px;line-height:1.4;letter-spacing:-.25px;margin:24px 0 12px;}
+#processor-quest #pq-legacy h3{font-size:16px;line-height:1.5;margin:5px 0 10px;}
+#processor-quest #pq-legacy p{margin:10px 0;line-height:1.75;}
+#processor-quest #pq-legacy .g>*,#processor-quest #pq-legacy .row>*{min-width:0;max-width:100%;}
+#processor-quest #pq-legacy .g{gap:17px;}
+#processor-quest #pq-legacy .row{gap:9px 12px;margin:14px 0;}
+#processor-quest #pq-legacy table{line-height:1.6;}
+#processor-quest #pq-legacy th,#processor-quest #pq-legacy td{padding:9px 8px;}
+#processor-quest #pq-legacy th{font-weight:600;}
+#processor-quest #pq-legacy :is(select,input,textarea){border:1px solid var(--pq-line);border-radius:7px;padding:8px 9px;}
+#processor-quest #pq-legacy button.b{border-radius:8px;min-height:38px;padding:8px 12px;}
+#processor-quest #pq-legacy button.b{background:var(--pq-button);border-color:var(--pq-button);color:var(--pq-button-ink);}
+#processor-quest #pq-legacy button.b.s{background:var(--pq-surface);color:var(--pq-purple);border-color:var(--pq-line);}
+#processor-quest #pq-legacy select,#processor-quest #pq-legacy input{background:var(--pq-surface);color:var(--pq-ink);}
+#processor-quest #pq-legacy .mu{color:var(--pq-muted);}
+@media(max-width:950px){#processor-quest .pq-lab-workspace{grid-template-columns:1fr;}#processor-quest .pq-library{border-right:0;border-bottom:1px solid var(--pq-line);display:grid;grid-template-columns:minmax(0,2fr) minmax(170px,1fr);gap:16px;padding:17px 21px;}#processor-quest .pq-library [data-pq-library]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}#processor-quest .pq-library-group{margin-top:16px;}#processor-quest .pq-library-link{font-size:11px;min-height:38px;padding:7px 5px;}#processor-quest .pq-page-index{border:0;margin:0;padding:0;}#processor-quest .pq-library-note{display:none;}}
+@media(max-width:580px){#processor-quest .pq-library{grid-template-columns:1fr;padding:16px 14px;}#processor-quest .pq-library [data-pq-library]{grid-template-columns:1fr 1fr;gap:15px;}#processor-quest .pq-library-group{margin-top:12px;}#processor-quest .pq-library-group:last-child{grid-column:1/-1;}#processor-quest .pq-library-group:last-child>div{display:flex;flex-wrap:wrap;gap:7px;}#processor-quest .pq-library-group:last-child .pq-library-link{width:auto;}#processor-quest .pq-library-link{font-size:12px;}#processor-quest .pq-page-index{border-top:1px solid var(--pq-line);padding-top:15px;}#processor-quest #pq-legacy h1{font-size:25px;}#processor-quest #pq-legacy .g{grid-template-columns:minmax(0,1fr);}#processor-quest #pq-legacy .row{align-items:flex-start;}#processor-quest #pq-legacy :is(select,input,textarea){font-size:16px;}#processor-quest #pq-legacy button.b{min-height:44px;}#processor-quest #pq-legacy th,#processor-quest #pq-legacy td{padding:7px 6px;}}
+@media(max-width:800px){#processor-quest .pq-header{padding-left:18px;}#processor-quest .pq-open-tag{display:none;}#processor-quest .pq-navigation{padding:10px 18px;}#processor-quest .pq-nav-note{display:none;}#processor-quest .pq-page{padding:25px 18px;}#processor-quest .pq-map-heading h2{font-size:36px;}#processor-quest .pq-map-layout{grid-template-columns:minmax(0,1.45fr) minmax(220px,1fr);gap:15px;}#processor-quest .pq-world-map{padding:20px 13px 15px;}#processor-quest .pq-worlds{gap:20px 13px;}#processor-quest .pq-world{padding:12px;}#processor-quest .pq-world[aria-pressed="true"]{padding:11px;}#processor-quest .pq-world strong{font-size:13px;}#processor-quest .pq-brief{padding:20px 17px;}#processor-quest .pq-mastery{display:none;}#processor-quest .pq-play-grid{grid-template-columns:1fr;}#processor-quest .pq-challenge{display:grid;grid-template-columns:1fr 1fr;gap:5px 23px;}#processor-quest .pq-challenge>.pq-kicker,#processor-quest .pq-challenge>h3,#processor-quest .pq-challenge>.pq-question-context,#processor-quest .pq-challenge>.pq-answer-options,#processor-quest .pq-challenge>.pq-feedback,#processor-quest .pq-challenge>.pq-hint{grid-column:1;}#processor-quest .pq-challenge>.pq-explain-question{grid-column:2;grid-row:1/6;margin:0;border:0;padding:0;}#processor-quest .pq-challenge>.pq-record{grid-column:2;grid-row:6;margin-top:0;}#processor-quest .pq-challenge>.pq-record-hint,#processor-quest .pq-challenge>.pq-text-button{grid-column:2;}#processor-quest .pq-learning-contract{align-items:flex-start;flex-wrap:wrap;}#processor-quest .pq-learning-contract>div{flex:1;min-width:170px;}#processor-quest .pq-learning-contract>.pq-button,#processor-quest .pq-learning-contract>.pq-text-button{max-width:none;margin-left:0;}}
+@media(max-width:580px){#processor-quest .pq-header{padding:18px 90px 18px 15px;min-height:103px;align-items:flex-start;}#processor-quest .pq-brand{font-size:15px;gap:9px;}#processor-quest .pq-brand small{font-size:11px;letter-spacing:.3px;}#processor-quest .pq-logo{width:34px;height:37px;border-radius:10px;font-size:17px;}#processor-quest .pq-brand>div{max-width:180px;}#processor-quest .pq-navigation{padding:8px 10px;}#processor-quest .pq-route-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:5px;}#processor-quest .pq-nav{font-size:12px;padding:8px 7px;min-height:40px;text-align:center;}#processor-quest .pq-page{padding:23px 14px;}#processor-quest .pq-map-heading h2{font-size:33px;}#processor-quest .pq-map-heading p br{display:none;}#processor-quest .pq-map-layout{grid-template-columns:1fr;}#processor-quest .pq-world-map{padding:19px 12px 16px;}#processor-quest .pq-worlds{gap:15px 12px;}#processor-quest .pq-world{min-height:167px;box-shadow:0 3px 0 var(--pq-line);}#processor-quest .pq-world:nth-child(even){transform:none;}#processor-quest .pq-world strong{font-size:13px;}#processor-quest .pq-world-mode{font-size:11px;max-width:59px;text-align:right;}#processor-quest .pq-world-number{width:26px;height:29px;flex-shrink:0;font-size:13px;}#processor-quest .pq-map-key{margin-top:22px;gap:7px;}#processor-quest .pq-map-key>span:last-child{margin-left:0;}#processor-quest .pq-brief-glyph{margin:16px 0;}#processor-quest .pq-brief h3{font-size:23px;}#processor-quest .pq-brief>.pq-button{margin-top:0;}#processor-quest .pq-learning-contract{gap:10px;}#processor-quest .pq-contract-symbol{padding-left:0;}#processor-quest .pq-app h2{font-size:27px;}#processor-quest .pq-app .pq-map-heading h2{font-size:33px;}#processor-quest .pq-mission-heading{gap:17px;}#processor-quest .pq-mission-heading>.pq-field{width:100%;}#processor-quest .pq-stepper{gap:6px;}#processor-quest .pq-stepper>i{width:11px;}#processor-quest .pq-stepper>strong{margin:5px 0 0;flex-basis:100%;}#processor-quest .pq-challenge{display:block;padding:21px 17px;}#processor-quest .pq-challenge>.pq-explain-question{margin-top:20px;border-top:1px solid var(--pq-line);padding-top:18px;}#processor-quest .pq-challenge>.pq-record{margin-top:18px;}#processor-quest .pq-stations{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}#processor-quest .pq-station{min-height:124px;}#processor-quest .pq-board{padding:18px 13px 13px;}#processor-quest .pq-value-lane{gap:7px;}#processor-quest .pq-value-packet{font-size:13px;padding:7px 9px;}#processor-quest .pq-value-source{font-size:11px;}#processor-quest .pq-value-wire{display:none;}#processor-quest .pq-cache-slots{grid-template-columns:1fr;}#processor-quest .pq-transfer{gap:12px;}#processor-quest .pq-transfer>div{flex-basis:75%;}#processor-quest .pq-transfer-field{width:130px;}#processor-quest .pq-notebook-empty{padding:25px 17px;}#processor-quest .pq-note dl{grid-template-columns:1fr;gap:4px;}#processor-quest .pq-note dd{margin-bottom:10px;}#processor-quest .pq-lab-heading{padding:23px 14px;}#processor-quest .pq-lab-selectors{width:100%;display:grid;grid-template-columns:1fr;}#processor-quest #pq-legacy #v{padding:18px 12px 30px;}#processor-quest .pq-footer{padding:17px 14px;}#processor-quest .pq-field select,#processor-quest .pq-field input{font-size:16px;}#processor-quest .pq-small-select{font-size:16px!important;}}
+@media(pointer:coarse){#processor-quest .pq-button,#processor-quest .pq-nav,#processor-quest .pq-answer,#processor-quest .pq-text-button,#processor-quest .pq-field select,#processor-quest .pq-field input,#processor-quest .pq-small-select{min-height:44px;}}
+@media(prefers-reduced-motion:reduce){#processor-quest *{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
+@media print{#processor-quest .pq-header,#processor-quest .pq-navigation,#processor-quest .pq-footer,#processor-quest .pq-lab-heading,#processor-quest .pq-library{display:none!important;}#processor-quest .pq-lab-workspace{display:block!important;}#processor-quest .pq-app{border:0;border-radius:0;}#processor-quest #pq-legacy #print-root{width:100%;}}
+
+/* Preserve the original active-state meaning with readable foregrounds. */
+#processor-quest .pq-full-lab{--studio-solid:light-dark(#7150c9,#7650c5);}
+#processor-quest #pq-legacy .pipeline th.ccur,#processor-quest #pq-legacy .cache-tbl tr.cset th{background:var(--studio-solid);color:#fff;}
+#processor-quest #pq-legacy .pipeline th.ccur .px-cyc{color:#fff;}
+#processor-quest #pq-legacy .cur,#processor-quest #pq-legacy .cell.ch,#processor-quest #pq-legacy .chip.on,#processor-quest #pq-legacy .dp-phases li.on button{background:var(--studio-solid);color:#fff;}
+#processor-quest #pq-legacy .cell.ch small{color:#f3e8ff;}
+
+/* Full Lab studio: presentation only; simulator state colors remain intact. */
+#processor-quest .pq-full-lab{--studio-bg:light-dark(#f6f5fa,#181720);--studio-panel:light-dark(#ffffff,#23212e);--studio-ink:light-dark(#29233f,#f1edfa);--studio-muted:light-dark(#6c657e,#b8b0ca);--studio-line:light-dark(#e6e2ef,#3c364b);--studio-accent:light-dark(#7150c9,#c1a8ff);--studio-soft:light-dark(#eee8fb,#352943);--studio-teal:light-dark(#146a62,#9be4d1);--studio-mint:light-dark(#e4f5ee,#223e36);background:var(--studio-bg);color:var(--studio-ink);}
+#processor-quest .pq-lab-heading{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;gap:28px;padding:32px 34px;border-bottom:1px solid var(--studio-line);background:linear-gradient(112deg,var(--studio-panel) 10%,var(--studio-soft) 140%);}
+#processor-quest .pq-lab-heading::before{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(var(--studio-line) 1px,transparent 1px);background-size:18px 18px;mask-image:linear-gradient(90deg,transparent 45%,#000);}
+#processor-quest .pq-studio-copy{max-width:700px;min-width:0;}
+#processor-quest .pq-lab-heading .pq-kicker{font-size:10px;letter-spacing:1.8px;color:var(--studio-accent);}
+#processor-quest .pq-lab-heading h2{font-size:clamp(26px,2.8vw,38px);line-height:1.2;letter-spacing:-1.25px;margin:10px 0;}
+#processor-quest .pq-lab-heading h2 em{font-style:normal;color:var(--studio-accent);}
+#processor-quest .pq-lab-heading p{font-size:14px;color:var(--studio-muted);line-height:1.65;margin-top:0;}
+#processor-quest .pq-studio-tags{display:flex;gap:8px 19px;flex-wrap:wrap;margin-top:19px;font-size:11px;color:var(--studio-muted);}
+#processor-quest .pq-studio-tags span{display:flex;gap:6px;align-items:center;}
+#processor-quest .pq-studio-tags i{width:6px;height:6px;border-radius:50%;background:var(--studio-teal);}
+#processor-quest .pq-studio-tags span+span::before{content:"";width:3px;height:3px;border-radius:50%;background:var(--studio-muted);opacity:.5;}
+#processor-quest .pq-studio-art{position:relative;width:250px;height:154px;flex:0 0 250px;}
+#processor-quest .pq-art-orbit{position:absolute;inset:7px 17px 2px;border:1px dashed var(--studio-accent);border-radius:50%;opacity:.4;transform:rotate(-17deg);}
+#processor-quest .pq-art-cpu{position:absolute;inset:30px 46px 11px 43px;padding:18px 15px;border:1px solid color-mix(in srgb,var(--studio-accent) 40%,var(--studio-panel));border-radius:18px;background:var(--studio-panel);transform:rotate(-7deg);box-shadow:5px 7px 0 color-mix(in srgb,var(--studio-accent) 14%,var(--studio-bg)),0 15px 25px -15px #54398c45;text-align:center;}
+#processor-quest .pq-art-cpu::before,#processor-quest .pq-art-cpu::after{content:"";position:absolute;top:20px;bottom:20px;width:6px;background:repeating-linear-gradient(to bottom,var(--studio-accent) 0 3px,transparent 3px 12px);opacity:.45;}
+#processor-quest .pq-art-cpu::before{left:-7px;}#processor-quest .pq-art-cpu::after{right:-7px;}
+#processor-quest .pq-art-cpu>span{font:9px Consolas,monospace;letter-spacing:1.8px;color:var(--studio-accent);}
+#processor-quest .pq-art-cpu strong{display:block;margin:6px 0 10px;font-size:18px;letter-spacing:-.6px;}
+#processor-quest .pq-art-cpu>div{display:flex;gap:5px;justify-content:center;}
+#processor-quest .pq-art-cpu i{height:5px;width:19px;border-radius:2px;background:var(--studio-soft);}
+#processor-quest .pq-art-cpu i:last-child{background:var(--studio-teal);}
+#processor-quest .pq-art-node{position:absolute;z-index:1;padding:8px 11px;border:1px solid var(--studio-line);border-radius:10px;background:var(--studio-panel);font:8px/1.4 Consolas,monospace;letter-spacing:1px;box-shadow:0 6px 18px #00000007;color:var(--studio-muted);}
+#processor-quest .pq-art-node b{display:block;font-size:12px;letter-spacing:1.3px;color:var(--studio-teal);margin-top:2px;}
+#processor-quest .pq-art-memory{left:0;top:9px;transform:rotate(-8deg);}
+#processor-quest .pq-art-output{right:0;bottom:3px;transform:rotate(7deg);}
+#processor-quest .pq-lab-toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 28px;background:var(--studio-panel);border-bottom:1px solid var(--studio-line);}
+#processor-quest .pq-lab-breadcrumb{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--studio-muted);}
+#processor-quest .pq-lab-breadcrumb>span{opacity:.45;}
+#processor-quest .pq-lab-breadcrumb strong{font-weight:600;color:var(--studio-accent);}
+#processor-quest .pq-lab-selectors{gap:16px;}
+#processor-quest .pq-lab-selectors .pq-field{display:flex;align-items:center;gap:8px;}
+#processor-quest .pq-lab-selectors .pq-field>span{font-size:11px;color:var(--studio-muted);white-space:nowrap;}
+#processor-quest .pq-lab-selectors select{background:var(--studio-bg);border:1px solid var(--studio-line);border-radius:8px;font-size:12px;min-height:38px;padding:7px 28px 7px 10px;max-width:245px;}
+#processor-quest .pq-lab-workspace{grid-template-columns:254px minmax(0,1fr);gap:0;}
+#processor-quest .pq-library{position:sticky;top:12px;align-self:start;max-height:calc(100dvh - 24px);overflow:auto;scrollbar-width:thin;padding:23px 17px 25px;background:var(--studio-panel);border-right:1px solid var(--studio-line);border-bottom:1px solid var(--studio-line);border-radius:0 0 18px 0;}
+#processor-quest .pq-library>details>summary{font-size:14px;list-style:none;cursor:pointer;position:relative;padding-right:20px;color:var(--studio-ink);}
+#processor-quest .pq-library>details>summary::-webkit-details-marker{display:none;}
+#processor-quest .pq-library>details>summary::after{content:"+";position:absolute;right:1px;top:-2px;font-size:20px;font-weight:400;color:var(--studio-accent);}
+#processor-quest .pq-library>details[open]>summary::after{content:"−";}
+#processor-quest .pq-library>details>summary>span{padding-left:0;margin-top:4px;font-size:10px;font-weight:400;color:var(--studio-muted);}
+#processor-quest .pq-library-search{margin:18px 0 7px;}
+#processor-quest .pq-library-search>label{display:block;font-size:10px;font-weight:600;color:var(--studio-muted);margin-bottom:6px;}
+#processor-quest .pq-library-search>div{display:flex;align-items:center;gap:7px;border:1px solid var(--studio-line);background:var(--studio-bg);border-radius:9px;padding:0 9px;}
+#processor-quest .pq-library-search>div:focus-within{outline:2px solid var(--studio-accent);outline-offset:2px;}
+#processor-quest .pq-library-search svg{width:15px;height:15px;flex-shrink:0;fill:none;stroke:var(--studio-muted);stroke-width:1.8;}
+#processor-quest .pq-library-search input{width:100%;min-width:0;min-height:40px;font-size:11px;padding:8px 0;background:transparent;border:0;outline:0;color:var(--studio-ink);}
+#processor-quest .pq-library-search input::placeholder{color:var(--studio-muted);opacity:.85;}
+#processor-quest .pq-library-search input:focus-visible{outline:none;}
+#processor-quest .pq-library-search button{background:none;border:0;font-size:20px;line-height:1;color:var(--studio-muted);padding:8px 3px;}
+#processor-quest .pq-library-search p{font-size:11px;line-height:1.6;color:var(--studio-muted);margin-top:7px;}
+#processor-quest .pq-library-group{margin-top:20px;}
+#processor-quest .pq-library-group h3{font-size:9px;font-weight:700;letter-spacing:1.5px;margin:0 10px 7px;color:var(--studio-muted);}
+#processor-quest .pq-library-group>div{display:flex;flex-direction:column;gap:3px;}
+#processor-quest .pq-library-link{align-items:center;gap:10px;min-height:43px;border:1px solid transparent;padding:9px;border-radius:9px;color:var(--studio-muted);font-size:12px;line-height:1.35;transition:background .15s,border-color .15s,color .15s;}
+#processor-quest .pq-library-link .pq-library-icon{display:flex;align-items:center;color:inherit;}
+#processor-quest .pq-library-icon svg{width:18px;height:18px;}
+#processor-quest .pq-library-link .pq-library-label{font:inherit;color:inherit;}
+#processor-quest .pq-library-link .pq-library-arrow{font:13px/1 Consolas,monospace;margin-left:auto;color:inherit;opacity:0;}
+#processor-quest .pq-library-link:hover{background:var(--studio-bg);color:var(--studio-ink);}
+#processor-quest .pq-library-link:hover .pq-library-arrow,#processor-quest .pq-library-link[aria-current="page"] .pq-library-arrow{opacity:1;}
+#processor-quest .pq-library-link[aria-current="page"]{background:var(--studio-soft);color:var(--studio-accent);border-color:color-mix(in srgb,var(--studio-accent) 12%,transparent);font-weight:650;box-shadow:inset 3px 0 var(--studio-accent);}
+#processor-quest .pq-library-link[aria-current="page"]>span{color:inherit;}
+#processor-quest .pq-page-index{margin:23px 7px 0;padding-top:20px;border-color:var(--studio-line);}
+#processor-quest .pq-page-index .pq-field{font-size:11px;color:var(--studio-ink);}
+#processor-quest .pq-page-index select{background:var(--studio-bg);border:1px solid var(--studio-line);border-radius:8px;min-height:40px;font-size:11px;color:var(--studio-ink);padding:8px;margin-top:7px;}
+#processor-quest .pq-index-status{font-size:10px;color:var(--studio-muted);}
+#processor-quest .pq-library-note{margin:22px 6px 0;padding:15px 13px;border:1px solid var(--studio-line);border-radius:12px;background:linear-gradient(135deg,var(--studio-mint),var(--studio-panel));}
+#processor-quest .pq-library-note>span{font-size:19px;color:var(--studio-teal);display:block;margin-bottom:5px;}
+#processor-quest .pq-library-note strong{font-size:11px;color:var(--studio-teal);}
+#processor-quest .pq-library-note p{font-size:11px;line-height:1.7;color:var(--studio-muted);margin-top:6px;}
+#processor-quest .pq-lab-main{min-width:0;padding:27px 28px 22px;}
+#processor-quest .pq-section-intro{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+#processor-quest .pq-section-icon{display:grid;place-items:center;width:51px;height:53px;flex-shrink:0;background:var(--studio-soft);color:var(--studio-accent);border:1px solid color-mix(in srgb,var(--studio-accent) 12%,transparent);border-radius:16px;transform:rotate(-4deg);}
+#processor-quest .pq-section-icon svg{width:25px;height:25px;}
+#processor-quest .pq-section-intro .pq-kicker{font-size:9px;letter-spacing:1.5px;color:var(--studio-muted);}
+#processor-quest .pq-section-intro h2{font-size:21px;letter-spacing:-.6px;margin:4px 0;scroll-margin-top:20px;}
+#processor-quest .pq-section-intro p{font-size:12px;line-height:1.65;color:var(--studio-muted);}
+#processor-quest .pq-section-tip{display:flex;gap:12px;align-items:center;padding:12px 16px;background:var(--studio-mint);border:1px solid color-mix(in srgb,var(--studio-teal) 14%,transparent);border-radius:12px;margin-bottom:22px;}
+#processor-quest .pq-section-tip>span{font:25px/1 Consolas,monospace;color:var(--studio-teal);}
+#processor-quest .pq-section-tip p{font-size:12px;line-height:1.65;color:var(--studio-teal);}
+#processor-quest .pq-section-tip strong{font-weight:650;margin-right:8px;}
+#processor-quest #pq-legacy{--bg:var(--studio-bg);--card:var(--studio-panel);--tx:var(--studio-ink);--mu:var(--studio-muted);--pr:var(--studio-accent);--hl:var(--studio-accent);--ch:var(--studio-accent);--bd:var(--studio-line);--lav:var(--studio-soft);--pq-bg:var(--studio-bg);--pq-surface:var(--studio-panel);--pq-ink:var(--studio-ink);--pq-muted:var(--studio-muted);--pq-line:var(--studio-line);--pq-purple:var(--studio-accent);--pq-soft:var(--studio-soft);background:transparent;font-size:14px;line-height:1.7;}
+#processor-quest #pq-legacy #v{padding:0 0 20px;}
+#processor-quest #pq-legacy h1{font-size:29px;line-height:1.25;font-weight:700;letter-spacing:-.9px;margin:23px 0 14px;}
+#processor-quest #pq-legacy h2{font-size:21px;letter-spacing:-.4px;line-height:1.4;margin:28px 0 14px;}
+#processor-quest #pq-legacy h3{font-size:16px;line-height:1.5;letter-spacing:-.15px;margin:2px 0 10px;}
+#processor-quest #pq-legacy h4{font-size:14px;line-height:1.5;margin:14px 0 7px;}
+#processor-quest #pq-legacy p{line-height:1.8;margin:10px 0;}
+#processor-quest #pq-legacy .card{padding:21px;margin:16px 0;border:1px solid var(--studio-line);border-radius:16px;box-shadow:0 5px 18px -12px #382a5a25;}
+#processor-quest #pq-legacy .g{gap:18px;margin:16px 0;}
+#processor-quest #pq-legacy .g>.card{margin:0;}
+#processor-quest #pq-legacy .card.plain{border-left:4px solid var(--studio-accent);background:color-mix(in srgb,var(--studio-soft) 45%,var(--studio-panel));}
+#processor-quest #pq-legacy .card.pro{border-left:4px solid var(--ch);}
+#processor-quest #pq-legacy details.card{padding:17px 20px;}
+#processor-quest #pq-legacy details.card>summary{font-size:14px;color:var(--studio-accent);line-height:1.6;padding:2px 0;cursor:pointer;}
+#processor-quest #pq-legacy details.card>summary:focus-visible{outline:3px solid var(--studio-accent);outline-offset:5px;border-radius:3px;}
+#processor-quest #pq-legacy .row{gap:10px 12px;margin:16px 0;}
+#processor-quest #pq-legacy button.b{min-height:42px;padding:9px 15px;border-radius:9px;font-size:13px;font-weight:600;background:light-dark(#7150c9,#c1a8ff);border-color:transparent;color:light-dark(#fff,#25183b);box-shadow:0 2px 2px #00000007;transition:box-shadow .15s,transform .15s,background .15s;}
+#processor-quest #pq-legacy button.b.s{background:var(--studio-panel);color:var(--studio-accent);border:1px solid var(--studio-line);box-shadow:none;font-weight:550;}
+#processor-quest #pq-legacy button.b:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 4px 12px color-mix(in srgb,var(--studio-accent) 18%,transparent);}
+#processor-quest #pq-legacy button.b.s:not(:disabled):hover{background:var(--studio-soft);border-color:var(--studio-accent);}
+#processor-quest #pq-legacy button.b:active{transform:translateY(0);}
+#processor-quest #pq-legacy :is(select,input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),textarea){background:var(--studio-bg);color:var(--studio-ink);border:1px solid var(--studio-line);border-radius:9px;min-height:42px;padding:9px 11px;line-height:1.5;font-size:13px;max-width:100%;}
+#processor-quest #pq-legacy input[type="number"]{width:85px;}
+#processor-quest #pq-legacy :is(input[type="checkbox"],input[type="radio"],input[type="range"]){accent-color:var(--studio-accent);}
+#processor-quest #pq-legacy textarea{font:13px/1.8 Consolas,"Courier New",monospace;min-height:145px;resize:vertical;}
+#processor-quest #pq-legacy pre,#processor-quest #pq-legacy .code{padding:14px 16px;border:1px solid var(--studio-line);background:color-mix(in srgb,var(--studio-soft) 38%,var(--studio-panel));border-radius:11px;line-height:1.8;tab-size:2;}
+#processor-quest #pq-legacy pre code{font:inherit;white-space:pre;}
+#processor-quest #pq-legacy .sc,#processor-quest #pq-legacy .pipeline-wrap{border:1px solid var(--studio-line);border-radius:11px;max-width:100%;overflow:auto;scrollbar-width:thin;}
+#processor-quest #pq-legacy table{font-size:13px;line-height:1.6;}
+#processor-quest #pq-legacy th{background:var(--studio-soft);font-size:12px;font-weight:650;}
+#processor-quest #pq-legacy :is(th,td){padding:11px 10px;border-bottom-color:var(--studio-line);}
+#processor-quest #pq-legacy .pipeline :is(th,td){padding:6px 5px;font-size:11px;}
+#processor-quest #pq-legacy .cell{padding:5px 8px;border-radius:8px;font-variant-numeric:tabular-nums;}
+#processor-quest #pq-legacy .chip{padding:4px 10px;font-size:11px;border-color:var(--studio-line);line-height:1.7;}
+#processor-quest #pq-legacy .t{font-size:10px;padding:2px 7px;letter-spacing:.1px;line-height:1.5;}
+#processor-quest #pq-legacy .dp2,#processor-quest #pq-legacy .datapath{border:1px solid var(--studio-line);border-radius:14px;}
+#processor-quest #pq-legacy .dp-text,#processor-quest #pq-legacy .px-explain,#processor-quest #pq-legacy .cv-now{border:1px solid var(--studio-line);border-radius:11px;padding:13px 16px;}
+#processor-quest #pq-legacy .px-stage{border-radius:12px;}
+#processor-quest #pq-legacy .mu{color:var(--studio-muted);}
+#processor-quest #pq-legacy .sm{font-size:12px;}
+#processor-quest .pq-section-pagination{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:20px;border-top:1px solid var(--studio-line);padding-top:20px;}
+#processor-quest .pq-section-pagination>span{font:10px/1.5 Consolas,monospace;color:var(--studio-muted);}
+#processor-quest .pq-section-pagination .pq-button{font-size:12px;border-radius:9px;background:var(--studio-panel);border:1px solid var(--studio-line);min-height:42px;padding:10px 14px;color:var(--studio-accent);}
+#processor-quest .pq-section-pagination .pq-button:not(:disabled):hover{border-color:var(--studio-accent);background:var(--studio-soft);}
+@media(min-width:1400px){#processor-quest:has(.pq-full-lab:not([hidden])){max-width:1480px;}#processor-quest .pq-lab-workspace{grid-template-columns:270px minmax(0,1fr);}#processor-quest .pq-lab-main{padding:30px 36px;}}
+@media(max-width:1100px){#processor-quest .pq-studio-art{width:190px;flex-basis:190px;transform:scale(.85);transform-origin:right center;}#processor-quest .pq-lab-selectors .pq-field>span{display:none;}#processor-quest .pq-lab-selectors .pq-field>select{max-width:220px;}}
+@media(max-width:950px){#processor-quest .pq-lab-workspace{grid-template-columns:minmax(0,1fr);}#processor-quest .pq-library{position:static;max-height:none;overflow:visible;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:20px;padding:18px 24px;border-right:0;border-radius:0;}#processor-quest .pq-library [data-pq-library]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}#processor-quest .pq-library .pq-library-group>div{display:flex;flex-direction:column;gap:3px;}#processor-quest .pq-library .pq-library-group:last-child{grid-column:auto;}#processor-quest .pq-library-link{width:100%;font-size:11px;}#processor-quest .pq-page-index{border:0;padding:0;margin:0;}#processor-quest .pq-page-index select{margin-top:5px;}#processor-quest .pq-library-note{display:none;}#processor-quest .pq-lab-main{padding:25px 24px;}#processor-quest .pq-lab-heading{padding:27px 26px;}#processor-quest .pq-lab-heading h2{font-size:29px;}}
+@media(max-width:700px){#processor-quest .pq-studio-art{display:none;}#processor-quest .pq-lab-toolbar{align-items:flex-start;flex-direction:column;gap:12px;padding:16px 21px;}#processor-quest .pq-lab-selectors{width:100%;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px;}#processor-quest .pq-lab-selectors .pq-field{display:block;min-width:0;}#processor-quest .pq-lab-selectors .pq-field>span{display:block;margin-bottom:5px;font-size:10px;}#processor-quest .pq-lab-selectors .pq-field>select{max-width:100%;width:100%;font-size:13px;min-height:42px;}#processor-quest .pq-lab-breadcrumb{font-size:11px;}#processor-quest .pq-library{grid-template-columns:minmax(0,1fr);}#processor-quest .pq-page-index{display:block;border-top:1px solid var(--studio-line);padding-top:14px;}#processor-quest .pq-page-index .pq-field{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;}#processor-quest .pq-page-index select{margin:0;font-size:12px;}#processor-quest .pq-index-status{margin-top:5px!important;}}
+@media(max-width:580px){#processor-quest .pq-lab-heading{padding:26px 20px;}#processor-quest .pq-lab-heading h2{font-size:30px;max-width:340px;line-height:1.18;}#processor-quest .pq-lab-heading p{font-size:12px;}#processor-quest .pq-studio-tags{gap:7px 12px;margin-top:16px;font-size:10px;}#processor-quest .pq-lab-heading .pq-kicker{font-size:9px;letter-spacing:1.2px;}#processor-quest .pq-library{padding:17px 20px;gap:16px;}#processor-quest .pq-library [data-pq-library]{grid-template-columns:1fr;}#processor-quest .pq-library .pq-library-group{margin-top:12px;}#processor-quest .pq-library .pq-library-group>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;}#processor-quest .pq-library .pq-library-group:last-child>div{display:grid;}#processor-quest .pq-library-link{min-height:44px;font-size:12px;gap:7px;}#processor-quest .pq-library-arrow{display:none;}#processor-quest .pq-library-search input{font-size:16px;}#processor-quest .pq-library-search button{min-height:44px;min-width:32px;}#processor-quest .pq-lab-main{padding:22px 16px;}#processor-quest .pq-section-intro{gap:11px;align-items:flex-start;}#processor-quest .pq-section-icon{width:43px;height:45px;border-radius:13px;}#processor-quest .pq-section-icon svg{width:22px;height:22px;}#processor-quest .pq-section-intro h2{font-size:20px;}#processor-quest .pq-section-intro p{font-size:12px;}#processor-quest .pq-section-tip{padding:12px;font-size:12px;align-items:flex-start;}#processor-quest .pq-section-tip strong{display:block;margin-bottom:2px;}#processor-quest #pq-legacy #v{padding:0 0 16px;}#processor-quest #pq-legacy h1{font-size:25px;}#processor-quest #pq-legacy .card{padding:16px;border-radius:13px;}#processor-quest #pq-legacy .g{grid-template-columns:minmax(0,1fr);gap:14px;}#processor-quest #pq-legacy details.card{padding:15px;}#processor-quest #pq-legacy button.b{min-height:44px;}#processor-quest #pq-legacy :is(select,input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),textarea){font-size:16px;min-height:44px;}#processor-quest #pq-legacy .cfgs{grid-template-columns:minmax(0,1fr);}#processor-quest #pq-legacy .dp-grid{grid-template-columns:minmax(0,1fr);}#processor-quest #pq-legacy .sc{margin-left:0;margin-right:0;}#processor-quest #pq-legacy :is(th,td){padding:9px 8px;}#processor-quest .pq-section-pagination{gap:8px;flex-wrap:wrap;}#processor-quest .pq-section-pagination .pq-button{font-size:11px;min-height:44px;padding:10px;}#processor-quest .pq-section-pagination>span{font-size:9px;}}
+@media(prefers-reduced-motion:reduce){#processor-quest .pq-full-lab *{transition:none!important;scroll-behavior:auto!important;}#processor-quest #pq-legacy button.b:not(:disabled):hover{transform:none;}}
+@media print{#processor-quest .pq-lab-heading,#processor-quest .pq-lab-toolbar,#processor-quest .pq-section-intro,#processor-quest .pq-section-tip,#processor-quest .pq-section-pagination{display:none!important;}#processor-quest .pq-lab-main{padding:0;}#processor-quest #pq-legacy .card{box-shadow:none;}}
+
+
+#processor-quest #pq-legacy .cfg.vis{border:2px solid var(--studio-accent);}
+#processor-quest #pq-legacy .cache-tbl td.hit .mu,#processor-quest #pq-legacy .cache-tbl td.miss .mu{color:inherit;}
+@media print{
+  #processor-quest #pq-legacy #print-root{background:#fff!important;color:#111!important;}
+  #processor-quest #pq-legacy #print-root table{font:9px/1.4 Arial,sans-serif!important;}
+  #processor-quest #pq-legacy #print-root th,#processor-quest #pq-legacy #print-root td{padding:4px!important;border:1px solid #ccc!important;color:#111!important;}
+  #processor-quest #pq-legacy #print-root th{background:#eee!important;font-size:9px!important;}
+  #processor-quest #pq-legacy #print-root td,#processor-quest #pq-legacy #print-root .card{background:#fff!important;}
+}
+
+</style>
+<script>
+(() => {
+  const root=document.getElementById('processor-quest');
+  const find=s=>root.querySelector(s), all=s=>[...root.querySelectorAll(s)];
+  const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const initial=window.openai?.widgetState?.privateContent;
+  const state={route:'map',world:'pipeline',mission:'pipeline',cycle:3,access:2,sqDone:false,forward:true,ways:1,input:7,answer:null,explanation:'',lab:'over',detail:'all',notes:[],...(initial?.questVersion===1?initial:{})};
+  let currentRun=null;
+  const program=['lw t0,0(a0)','add t1,t0,t0','lw t2,4(a0)','sub t3,t1,t2','sw t3,12(a0)'];
+  const worlds=[
+    {id:'build',n:'01',title:'Build the machine',sub:'Components & custom ISA',kind:'Explore',glyph:'⌘',label:'WORLD 01 · FOUNDATIONS',description:'Discover how instructions, registers, arithmetic, and memory fit together.',outcome:'Describe a processor’s components and design an instruction format.',checks:['Processor Construction','Custom ISA builder','Full explanations & glossary'],lab:'build'},
+    {id:'subleq',n:'02',title:'One instruction, two jobs',sub:'SUBLEQ & branching',kind:'Mission',glyph:'−',label:'WORLD 02 · ONE-INSTRUCTION WORLD',description:'One instruction changes a value and decides where execution goes next.',outcome:'Compute a SUBLEQ result and explain its branch decision.',checks:['Predict the new value','Observe subtraction & branch','Explain the condition'],lab:'oisc'},
+    {id:'execute',n:'03',title:'Make values move',sub:'Instruction execution',kind:'Explore',glyph:'↗',label:'WORLD 03 · EXECUTION',description:'Follow real operands through architecture-specific datapaths and control signals.',outcome:'Trace an instruction from fetch to its effect on registers or memory.',checks:['All four processor models','Instruction Explorer & datapath','Full traces & values'],lab:'sim'},
+    {id:'pipeline',n:'04',title:'Pipeline rescue',sub:'Dependencies & forwarding',kind:'Mission',glyph:'⇢',label:'WORLD 04 · PIPELINE',description:'Get the correct value to an instruction before it can continue.',outcome:'Explain a load-use stall and trace a forwarded value.',checks:['Predict the earliest EX cycle','Observe a forwarded operand','Explain the remaining stall'],lab:'sim'},
+    {id:'cache',n:'05',title:'Cache collision',sub:'Locality & associativity',kind:'Mission',glyph:'▦',label:'WORLD 05 · MEMORY',description:'Two memory blocks want the same home. Make a prediction and watch the replacement.',outcome:'Distinguish compulsory and conflict misses, then test associativity.',checks:['Predict the third access','Observe hits, misses & evictions','Explain the competing blocks'],lab:'cache'},
+    {id:'experiments',n:'06',title:'Prove the trade-off',sub:'Benchmarks & reports',kind:'Explore',glyph:'≋',label:'WORLD 06 · EXPERIMENTS',description:'Compare the same workload across models and support a conclusion with data.',outcome:'Interpret CPI, execution time, code size, cache results, and assumptions.',checks:['Twelve workloads & four models','Compare & Reports','Classroom experiments & exports'],lab:'cmp'}
+  ];
+  const sectionNames=[['over','Overview'],['build','Processor Construction & Custom ISA'],['oisc','OISC Lesson'],['mod','Processor Models'],['exp','Instruction Explorer'],['sim','Execution Simulator'],['cache','Cache Lab'],['bench','Benchmarks'],['sbx','Program Sandbox'],['cmp','Compare & Reports'],['demo','Professor Demo']];
+  const sectionMeta={
+    over:{group:'Understand',icon:'compass',description:'Find your bearings. Connect the big ideas before exploring the details.',tip:'Start with the processor overview, then choose any section in the lab library.',terms:'start introduction guide architecture foundations'},
+    build:{group:'Understand',icon:'chip',description:'From building blocks to your own instruction set. Make a machine yours.',tip:'Explore the components, then use the Custom ISA builder to assemble and execute a program.',terms:'custom isa assembler encoding components construction design'},
+    oisc:{group:'Understand',icon:'branch',description:'Discover how one instruction can change both data and direction.',tip:'Try the SUBLEQ demo. Change A and B, then watch the subtraction and branch decision.',terms:'subleq subtraction branch one instruction'},
+    mod:{group:'Understand',icon:'layers',description:'Four ways to build a processor. Explore what each model does differently.',tip:'Compare the instruction sets and model assumptions before choosing an architecture.',terms:'mips rv32i risc x86 subleq architectures processor models'},
+    exp:{group:'Understand',icon:'code',description:'Open up an instruction. See the bits, operands, and operations inside.',tip:'Choose an architecture and an instruction to inspect its encoding and meaning.',terms:'instruction explorer encoding bits operands decode'},
+    sim:{group:'Investigate',icon:'play',description:'Follow the values. See instructions move through a working machine.',tip:'Use Step instruction to move at your pace, then explore the datapath and pipeline views.',terms:'execution simulator pipeline forwarding hazards stalls datapath registers timing'},
+    cache:{group:'Investigate',icon:'grid',description:'Give your data a home. Make hits, misses, and mapping visible.',tip:'Choose a cache configuration and access pattern, then step through the reads and inspect the sets.',terms:'memory locality cache associativity hit miss lru fifo addresses'},
+    bench:{group:'Investigate',icon:'chart',description:'Put the models to work. Discover what changes across real workloads.',tip:'Choose a workload and compare its results across the processor models.',terms:'benchmarks performance workloads fibonacci cpi cycles'},
+    sbx:{group:'Investigate',icon:'code',description:'A little space for big experiments. Write a program and see what happens.',tip:'Choose a model, edit your program, then run it and inspect the result.',terms:'program sandbox editor assembly code custom'},
+    cmp:{group:'Explain & present',icon:'chart',description:'Turn your experiments into a story supported by evidence.',tip:'Compare the results, inspect the assumptions, and use the existing report and export controls.',terms:'compare reports csv json html export formulas results'},
+    demo:{group:'Explain & present',icon:'spark',description:'Bring the ideas together. Explore guided experiments with a clear takeaway.',tip:'Choose a professor demo and follow its controls to reveal the trade-off step by step.',terms:'professor demo presentation teaching experiments guided'}
+  };
+  const labIcons={compass:'<circle cx="12" cy="12" r="9"/><path d="m16 8-2 6-6 2 2-6Z"/>',chip:'<rect x="6" y="6" width="12" height="12" rx="3"/><path d="M9 2v4m6-4v4M9 18v4m6-4v4M2 9h4m-4 6h4m12-6h4m-4 6h4"/>',branch:'<circle cx="6" cy="5" r="2"/><circle cx="18" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><path d="M6 7v10m0-5h5a7 7 0 0 0 7-5"/>',layers:'<path d="m12 3 10 6-10 6L2 9Zm-9 10 9 5 9-5M3 17l9 5 9-5"/>',code:'<path d="m7 6-5 6 5 6m10-12 5 6-5 6M14 3l-4 18"/>',play:'<path d="m9 6 10 6-10 6Z"/><path d="M4 5v14"/>',grid:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18m6-18v18M3 9h18M3 15h18"/>',chart:'<path d="M4 3v17h17M8 16v-4m5 4V8m5 8V5"/>',spark:'<path d="m12 2 3 7 7 3-7 3-3 7-3-7-7-3 7-3Z"/>'};
+  function labIcon(name){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+labIcons[name]+'</svg>';}
+  function updateLabContext(){
+    const index=sectionNames.findIndex(([id])=>id===state.lab),meta=sectionMeta[state.lab];if(index<0||!meta)return;
+    find('[data-pq-section-group]').textContent=meta.group;
+    find('[data-pq-section-title]').textContent=sectionNames[index][1];
+    find('[data-pq-section-description]').textContent=meta.description;
+    find('[data-pq-section-tip]').textContent=meta.tip;
+    find('[data-pq-section-icon]').innerHTML=labIcon(meta.icon);
+    find('[data-pq-section-number]').textContent='SECTION '+String(index+1).padStart(2,'0')+' / 11';
+    find('[data-pq-section-position]').textContent=(index+1)+' of 11 sections';
+    find('[data-pq-section-prev]').disabled=index===0;
+    find('[data-pq-section-next]').disabled=index===sectionNames.length-1;
+  }
+  function filterLibrary(){
+    const query=find('[data-pq-library-search]').value.trim().toLowerCase();let count=0;
+    all('[data-pq-lab-link]').forEach(button=>{const id=button.dataset.pqLabLink;const meta=sectionMeta[id];const name=sectionNames.find(([key])=>key===id)?.[1]||'';const matches=!query||(name+' '+meta.description+' '+meta.terms).toLowerCase().includes(query);button.hidden=!matches;if(matches)count++;});
+    all('.pq-library-group').forEach(group=>{group.hidden=![...group.querySelectorAll('[data-pq-lab-link]')].some(button=>!button.hidden);});
+    find('[data-pq-library-clear]').hidden=!query;
+    find('[data-pq-search-status]').textContent=!query?'':count?count+' section'+(count===1?'':'s')+' found':'No sections found. Try “cache”, “pipeline”, or “reports”.';
+  }
+  const libraryGroups=[['Understand',['over','build','oisc','mod','exp']],['Investigate',['sim','cache','bench','sbx']],['Explain & present',['cmp','demo']]];
+  const missionInfo={pipeline:{title:'Deliver the right value.',subtitle:'Can forwarding remove every stall? Make a prediction, then test it.',board:'Processor floor',question:'When can the add enter EX?',context:()=>`Forwarding is ${state.forward?'on':'off'}. The load enters IF in cycle 1.`,answers:()=>state.forward?[['4','Cycle 4'],['5','Cycle 5'],['6','Cycle 6']]:[['4','Cycle 4'],['5','Cycle 5'],['6','Cycle 6']],correct:()=>state.forward?'5':'6',hint:()=>state.forward?'The load reads data in MEM in cycle 4. The next instruction cannot use a value before it exists.':'Without forwarding, the load must write t0 back in cycle 5 before the add can use it in EX.',why:()=>state.forward?'Why does a load-use stall remain?':'Why does the add wait longer?',causes:()=>state.forward?[['load','Loaded data is ready only after MEM'],['clock','Forwarding changes the clock speed'],['wrong','The arithmetic result is incorrect']]:[['writeback','The consumer waits for register write-back'],['clock','The processor clock becomes slower'],['memory','Every instruction reads data memory']],correctCause:()=>state.forward?'load':'writeback',transfer:'Change the first loaded value. Does the schedule change, or only the answer?',inputLabel:'First memory value',defaultInput:7},cache:{title:'Give each block a home.',subtitle:'Predict a miss. Change the mapping. Find the cause.',board:'Memory delivery board',question:'Is the third read a hit or a miss?',context:()=>`Read addresses 0, 64, 0 with a 64 B ${state.ways===1?'direct-mapped':'2-way'} cache and 16 B blocks.`,answers:()=>[['hit','Hit — the block is still there'],['miss','Miss — the block is not there']],correct:()=>state.ways===1?'miss':'hit',hint:()=>`Addresses 0 and 64 are in blocks 0 and 4. Both map to set 0. The set has ${state.ways===1?'one slot':'two slots'}.`,why:()=>state.ways===1?'Why is the third read a miss?':'Why can the third read hit?',causes:()=>state.ways===1?[['conflict','Two blocks compete for one slot'],['first','It is the first read of this block'],['capacity','The cache has no storage at all']]:[['coexist','Both blocks can stay in the same set'],['bigger','The total cache capacity is larger'],['always','Two-way caches never miss']],correctCause:()=>state.ways===1?'conflict':'coexist',transfer:'Switch between one and two ways. Capacity and block size stay the same.',inputLabel:'Ways in the selected set',defaultInput:1},subleq:{title:'One instruction. Two consequences.',subtitle:'Subtract a value, then discover where the processor goes next.',board:'SUBLEQ instruction room',question:'What will B contain after SUBLEQ?',context:()=>`SUBLEQ A,B,6 with A = ${state.input} and B = 3.`,answers:()=>{const correct=3-state.input;return [[String(correct),`B = ${correct}`],[String(correct+2),`B = ${correct+2}`],[String(correct-3),`B = ${correct-3}`]];},correct:()=>String(3-state.input),hint:()=>'SUBLEQ stores B − A in B. It then checks whether the new B is less than or equal to zero.',why:()=>'What decides whether the branch is taken?',causes:()=>[['nonpositive','The new value of B is ≤ 0'],['negativeA','The old value of A is negative'],['always','SUBLEQ always jumps to its target']],correctCause:()=>'nonpositive',transfer:'Change A. Find a case that branches and a case that continues to the next instruction.',inputLabel:'Value of A',defaultInput:5}};
+  function persist(){if(window.openai?.setWidgetState)window.openai.setWidgetState({modelContent:{design:'Processor Lab Quest',mission:state.mission,fullLabSection:state.lab,missionRecords:state.notes.map(n=>({mission:n.mission,input:n.input,result:n.result}))},privateContent:{...state,questVersion:1}}).catch(()=>{});}
+  function resetChecks(){state.answer=null;state.explanation='';state.cycle=3;state.access=2;state.sqDone=false;}
+  function chooseMission(id){if(!missionInfo[id])return;state.mission=id;state.world=id;state.input=missionInfo[id].defaultInput;if(id==='cache')state.input=state.ways;resetChecks();state.route='play';render();persist();}
+  function currentWorld(){return worlds.find(w=>w.id===state.world)||worlds[3];}
+  function navigate(route){if(!['map','play','lab','notebook'].includes(route))return;if(state.route==='lab'&&route!=='lab'){simStop();dpStop();pxStopAll();cvStopAll();dmStop();}state.route=route;render();persist();}
+  function openLab(section){state.lab=section;state.route='lab';render();persist();}
+  function runPipeline(){const model=mk('rv',{mem:{0:state.input,1:5}},program);let guard=0;while(!model.halt&&guard++<1000)step(model);if(model.err||!model.halt)throw new Error(model.err||'Example did not halt');const result=explainPipeline(model.tr,{arch:'rv',forwarding:state.forward,branchPenalty:2,branchPolicy:'every'});return {model,result};}
+  function cacheRun(){return simulateCache(Array.from({length:16},(_,i)=>({address:i%2?64:0,type:'read'})),{cacheSize:64,blockSize:16,associativity:state.ways,policy:'LRU',writePolicy:'write-back',hitTime:1,missPenalty:20});}
+  function subleqRun(){const model=mk('sq',{mem:{0:state.input,1:3}},['SUBLEQ A,B,6']);step(model);return model;}
+  function observed(){return state.mission==='pipeline'?state.cycle>=(currentRun?.result?.rows[1]?.EX||(state.forward?5:6)):state.mission==='cache'?state.access>=3:state.sqDone;}
+  function checks(){const info=missionInfo[state.mission];return{predict:state.answer===info.correct(),observe:observed(),explain:state.explanation===info.correctCause()};}
+  function missingEvidence(){
+    const check=checks(),missing=[];
+    if(!check.predict)missing.push(state.answer===null?'Choose a prediction.':observed()?'Revise your prediction to match the observed result.':'Test your prediction, then revise it if needed.');
+    if(!check.observe)missing.push(state.mission==='subleq'?'Execute the instruction.':state.mission==='cache'?'Advance to at least the third read.':'Advance until the add reaches EX.');
+    if(!check.explain)missing.push(state.explanation?'Revise the cause to explain the observed behavior.':'Choose the cause of the result.');
+    return missing.join(' ');
+  }
+  function renderMap(){const w=currentWorld();find('[data-pq-worlds]').innerHTML=worlds.map(world=>`<button class="pq-world cursor-interaction" data-pq-world="${world.id}" aria-pressed="${world.id===state.world}"><span class="pq-world-top"><span class="pq-world-number">${world.n}</span><span class="pq-world-mode">${world.kind}</span></span><strong>${world.title}</strong><small>${world.sub}</small></button>`).join('');find('[data-pq-world-label]').textContent=w.label;find('[data-pq-world-title]').textContent=w.title;find('[data-pq-world-glyph]').textContent=w.glyph;find('[data-pq-world-description]').textContent=w.description;find('[data-pq-world-outcome]').textContent=w.outcome;find('[data-pq-world-checks]').innerHTML=w.checks.map(t=>`<span><b>↳</b>${t}</span>`).join('');find('[data-pq-start]').textContent=missionInfo[w.id]?'Enter mission →':'Explore this world →';}
+  function renderPipeline(){currentRun=runPipeline();const {result,model}=currentRun;state.cycle=Math.max(0,Math.min(result.cycles,state.cycle));const c=state.cycle;const timeline=result.timeline.find(t=>t.cycle===c);find('[data-pq-settings]').innerHTML=`<label><input type="checkbox" data-pq-forward ${state.forward?'checked':''}> Forwarding</label><span>RV32I subset</span>`;
+    const slots=['IF','ID','EX','MEM','WB'];const names=['Fetch','Decode','Execute','Memory','Write-back'];
+    let title='The pipeline is ready.',text=`Input memory contains ${state.input} and 5. The program computes 2 × ${state.input} − 5.`,source='Data memory',packet=`${state.input} and 5`,destination='Program',active=false;
+    if(timeline){const fwd=timeline.forwards?.[0];const stalled=timeline.stalled;const ex=timeline.slot.EX;
+      if(stalled>=0){const row=result.rows[stalled];title=`Instruction #${stalled+1} waits in decode.`;text=state.forward?'A loaded value is not available until after MEM. The dependent instruction waits one extra cycle.':'With forwarding off, the consumer must wait until the producer writes its register value back.';packet='Waiting';source=stalled===4?'ALU result':'Load result';destination='ID';}
+      else if(fwd){title='A real value takes a shortcut.';text=`${fwd.reg} = ${fwd.value} is supplied through ${fwd.via||fwd.path||fwd.resolvedBy||'a forwarding path'}. The instruction uses this operand instead of waiting for register write-back.`;packet=`Value ${fwd.value}`;source=(fwd.via||fwd.path||fwd.resolvedBy||'Pipeline register').split('→')[0];destination='EX';active=true;}
+      else if(ex?.row!==null&&ex?.row!==undefined){const i=ex.row;title=i===1?`${state.input} + ${state.input} = ${state.input*2}`:i===3?`${state.input*2} − 5 = ${state.input*2-5}`:'Calculate the data address.';text=i===1?'The add uses t0 twice. Its result will be written into t1.':i===3?'The sub uses the doubled value and the second loaded value.':`The ALU calculates address ${i===2?4:i===4?12:0} from the base register and offset.`;packet=i===1?String(state.input*2):i===3?String(state.input*2-5):String(i===2?4:i===4?12:0);source='Operands';destination='ALU result';}
+      else {title='Instructions work at different stages.';text='Follow the labeled instruction tokens. A bubble is an empty slot introduced by a stall; it moves through the pipeline too.';packet=`Cycle ${c}`;source='IF';destination='WB';}
+      if(c===5&&state.forward){title='Forward the load result into the add.';text=`t0 = ${state.input} travels through MEM/WB → EX. The ALU computes ${state.input} + ${state.input} = ${state.input*2}. The previous load-use stall was still necessary.`;packet=`t0 = ${state.input}`;source='MEM/WB';destination='EX · ALU';active=true;}
+      if(c===result.cycles){title=`Program complete: memory[12] = ${model.m[3]}.`;text=`${result.instructions} instructions + 4 fill cycles + ${result.dataStalls} stalls = ${result.cycles} cycles. Turning forwarding ${state.forward?'off':'on'} changes timing, while the final answer stays the same.`;source='Five instructions';packet=`Result ${model.m[3]}`;destination='Memory[12]';}}
+    find('[data-pq-board]').innerHTML=`<div class="pq-stations">${slots.map((stage,i)=>{const slot=timeline?.slot[stage];const row=slot?.row;const status=slot?.state;const token=row===null||row===undefined?(status==='bubble'?'Bubble':'Empty'):`#${row+1} ${program[row].split(' ')[0]}`;return `<div class="pq-station ${stage==='EX'&&row===1?'pq-station-active':''}"><span class="pq-station-heading">${stage}</span><span class="pq-station-name">${names[i]}</span><div class="pq-token ${status==='stall'||status==='hold'?'pq-token-wait':''} ${row===null||row===undefined?'pq-token-bubble':''}">${escape(token)}${status==='stall'||status==='hold'?`<small>${status==='hold'?'HOLD':'WAIT'}</small>`:''}</div></div>`;}).join('')}</div><div class="pq-value-lane"><span class="pq-value-source">${escape(source)}</span><span class="pq-value-wire ${active?'pq-wire-active':''}"></span><span class="pq-value-packet">${escape(packet)}</span><span class="pq-value-wire ${active?'pq-wire-active':''}"></span><span class="pq-value-source">${escape(destination)}</span></div><div class="pq-program-strip">${program.map((line,i)=>`<span class="pq-code-pill ${timeline?.slot.EX?.row===i?'pq-code-now':''}"><span>${i+1}</span>${escape(line)}</span>`).join('')}</div>`;
+    find('[data-pq-position]').textContent=`Cycle ${c} / ${result.cycles}`;find('[data-pq-observe-title]').textContent=title;find('[data-pq-observe-text]').textContent=text;find('[data-pq-next]').textContent='Step cycle →';find('[data-pq-back]').disabled=c===0;find('[data-pq-next]').disabled=c===result.cycles;find('[data-pq-finish]').disabled=c===result.cycles;
+    find('[data-pq-evidence]').innerHTML=`<p><strong>Current settings:</strong> forwarding ${state.forward?'on':'off'}; in-order, single-issue, five-stage pipeline. Data memory inputs: ${state.input}, 5. Five instructions. No branches in this example. Cache delays are separate.</p><p><strong>Calculated:</strong> CPI = ${result.cycles} ÷ 5 = ${result.cpi}. Final simulated memory[12] = ${model.m[3]}. Registers are updated at the end of their WB cycle.</p><div class="pq-evidence-table-wrap"><table class="pq-evidence-table"><thead><tr><th>Instruction</th>${slots.map(s=>`<th>${s}</th>`).join('')}</tr></thead><tbody>${result.rows.map((row,i)=>`<tr><th>${escape(program[i])}</th>${slots.map(s=>`<td>${row[s]}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p>Full Lab → Execution Simulator includes the complete timeline, hazards, forwarding paths, control signals, datapath, custom programs, and all original explanations.</p>`;
+  }
+  function renderCache(){currentRun=cacheRun();const n=state.access=Math.max(1,Math.min(16,state.access));const trace=currentRun.trace||currentRun.history||currentRun.accesses;const event=trace[n-1];const address=n%2?0:64,block=address/16;const hit=n>2&&state.ways===2;const currentDirect=block;const wayValues=state.ways===1?[currentDirect]:[0,n>1?4:null];const hits=state.ways===2?Math.max(0,n-2):0;const misses=n-hits;
+    find('[data-pq-settings]').innerHTML=`<select data-pq-ways class="pq-small-select cursor-interaction" aria-label="Cache associativity"><option value="1" ${state.ways===1?'selected':''}>Direct-mapped</option><option value="2" ${state.ways===2?'selected':''}>2-way</option></select><span>64 B · 16 B blocks</span>`;
+    find('[data-pq-board]').innerHTML=`<div class="pq-cache-request"><div class="pq-memory-packet"><strong>${address}</strong><div><span>READ ADDRESS</span><code>Block ${block} → set 0</code></div></div><span class="pq-cache-outcome ${hit?'pq-is-hit':''}">${hit?'HIT':'MISS'} · ${n<=2?'First use':hit?'Reuse':'Conflict'}</span></div><div class="pq-cache-board-heading"><span>Set 0 · ${state.ways===1?'one possible home':'two possible homes'}</span><span>${state.ways===1?'4 sets × 1 way':'2 sets × 2 ways'}</span></div><div class="pq-cache-slots">${wayValues.map((b,i)=>`<div class="pq-cache-slot ${b===block?'pq-slot-current':''}"><small>WAY ${i}</small><strong>${b===null?'Empty':'Block '+b}</strong><code>${b===null?'Available slot':'Bytes '+b*16+'–'+(b*16+15)}</code></div>`).join('')}${state.ways===1?'<div class="pq-cache-slot"><small>WHY NO SECOND SLOT?</small><strong>One way per set</strong><code>The cache has 4 lines in total, each in a different set.</code></div>':''}</div><div class="pq-cache-sequence" aria-label="Sixteen alternating reads">${Array.from({length:16},(_,i)=>`<span class="${i+1<n?'pq-read-done':''} ${i+1===n?'pq-read-now':''}">${i%2?64:0}</span>`).join('')}</div><div class="pq-cache-counters"><span><b>${hits}</b> hits</span><span><b>${misses}</b> misses</span><span><b>${n}</b> reads so far</span></div>`;
+    find('[data-pq-position]').textContent=`Read ${n} / 16`;find('[data-pq-next]').textContent='Next access →';find('[data-pq-back]').disabled=n===1;find('[data-pq-next]').disabled=n===16;find('[data-pq-finish]').disabled=n===16;
+    find('[data-pq-observe-title]').textContent=n<=2?'Every new block must be loaded first.':hit?'Both blocks can stay. That is a hit.':'The same slot is needed again.';
+    find('[data-pq-observe-text]').textContent=n<=2?'A first access to a block is a compulsory miss. Continue to the third read to see the effect of mapping.':hit?`Block ${block} is still in set 0. Two ways keep blocks 0 and 4 together without changing total cache capacity.`:`Block ${block} replaces block ${block===0?4:0}. The third and later misses are conflicts: two blocks compete for the same direct-mapped line.`;
+    find('[data-pq-evidence]').innerHTML=`<p><strong>Geometry:</strong> 64 B ÷ 16 B = 4 lines. ${state.ways===1?'4 sets × 1 way':'2 sets × 2 ways'}. Block 0 and block 4 both map to set 0. Other sets remain empty for this sequence.</p><p><strong>Full sequence, simulated:</strong> ${currentRun.hits} hits, ${currentRun.misses} misses. <strong>Calculated AMAT:</strong> ${currentRun.amat} cycles. Assumptions: 1-cycle hit time; 20-cycle miss penalty; LRU, write-back, read-only sequence. AMAT = hit time + miss rate × miss penalty.</p><div class="pq-evidence-table-wrap"><table class="pq-evidence-table"><thead><tr><th>Read</th><th>Address</th><th>Set</th><th>Result</th></tr></thead><tbody>${Array.from({length:n},(_,i)=>`<tr><td>${i+1}</td><td>${i%2?64:0}</td><td>0</td><td>${i>1&&state.ways===2?'Hit':i<=1?'Compulsory miss':'Conflict miss'}</td></tr>`).join('')}</tbody></table></div><p>This example demonstrates conflicts; it does not imply that 2-way is always faster. Full Cache Lab retains all replacement policies, write policies, address fields, miss classification, experiments, comparisons, and assumptions.</p>`;
+  }
+  function renderSubleq(){currentRun=subleqRun();const value=currentRun.m[1],branched=value<=0;find('[data-pq-settings]').innerHTML='<span>SUBLEQ · conceptual model</span>';find('[data-pq-board]').innerHTML=`<span class="pq-kicker">SUBLEQ A,B,6</span><div class="pq-sq-board"><div class="pq-sq-value"><span>B before</span><strong>3</strong><code>Subtract A = ${state.input}</code></div><span class="pq-sq-arrow">→</span><div class="pq-sq-value"><span>B ${state.sqDone?'after':'will become'}</span><strong>${state.sqDone?value:'?'}</strong><code>${state.sqDone?`3 − ${state.input} = ${value}`:'Make a prediction'}</code></div></div><div class="pq-branch-path"><span>New B ≤ 0 ?</span><strong>${state.sqDone?(branched?'YES → PC = 6':'NO → PC = 1'):'Run to decide'}</strong></div><div class="pq-program-strip"><span class="pq-code-pill">1. B ← B − A</span><span class="pq-code-pill">2. If B ≤ 0, branch to 6</span></div>`;
+    find('[data-pq-next]').textContent='Execute instruction →';find('[data-pq-position]').textContent=state.sqDone?'Instruction complete':'Before execution';find('[data-pq-back]').disabled=!state.sqDone;find('[data-pq-next]').disabled=state.sqDone;find('[data-pq-finish]').disabled=state.sqDone;
+    find('[data-pq-observe-title]').textContent=state.sqDone?`B becomes ${value}; ${branched?'the branch is taken':'execution continues'}.`:'One instruction updates both data and control flow.';find('[data-pq-observe-text]').textContent=state.sqDone?`SUBLEQ calculates B − A = 3 − ${state.input} = ${value}. The new B ${branched?'is':'is not'} ≤ 0, so the next instruction index is ${currentRun.pc}.`:'First predict the subtraction result. Then execute and inspect the new value and program counter.';
+    find('[data-pq-evidence]').innerHTML=`<p><strong>Exact interpreter result:</strong> memory A = ${currentRun.m[0]}, B = ${value}; next instruction index PC = ${currentRun.pc}. Branch target = 6. The program counter is an instruction index in this teaching model.</p><p>SUBLEQ writes B − A into B and branches when the updated B is less than or equal to zero. A is unchanged. This is the original simulator’s conceptual SUBLEQ model; the full OISC Lesson retains every example, explanation, and exercise.</p>`;
+  }
+  function renderQuestions(){const info=missionInfo[state.mission];find('[data-pq-question]').textContent=info.question;find('[data-pq-question-context]').textContent=info.context();find('[data-pq-answers]').innerHTML=info.answers().map(([value,label])=>`<button class="pq-answer cursor-interaction" data-pq-answer="${escape(value)}" aria-pressed="${state.answer===value}"><span class="pq-radio" aria-hidden="true"></span>${escape(label)}</button>`).join('');find('[data-pq-hint]').textContent=info.hint();find('[data-pq-why-label]').textContent=info.why();find('[data-pq-explanation]').innerHTML='<option value="">Choose the cause…</option>'+info.causes().map(([v,label])=>`<option value="${v}" ${state.explanation===v?'selected':''}>${escape(label)}</option>`).join('');const correct=state.answer===info.correct();find('[data-pq-feedback]').classList.toggle('pq-feedback-correct',correct);find('[data-pq-feedback]').textContent=state.answer===null?'Pick a prediction. You can revise it after inspecting the trace.':correct?'Prediction checked. Now use the experiment to collect evidence.':observed()?'Your prediction differs from the observed result. Select the answer that matches the trace.':'Test that idea against the trace. You can revise your prediction without a penalty.';find('[data-pq-explain-feedback]').textContent=!state.explanation?'':state.explanation===info.correctCause()?'Cause checked: this explains the behavior in the model.':'Look at when the value becomes available, or which block occupies the set. Revise the cause and test again.';find('[data-pq-transfer-description]').textContent=info.transfer;find('[data-pq-input-label]').textContent=info.inputLabel;const input=find('[data-pq-input]');input.value=state.mission==='cache'?state.ways:state.input;input.min=state.mission==='cache'?1:-20;input.max=state.mission==='cache'?2:20;const check=checks(),count=Object.values(check).filter(Boolean).length;all('[data-pq-check]').forEach(el=>{el.classList.toggle('pq-check-done',check[el.dataset.pqCheck]);el.querySelector('b').textContent=check[el.dataset.pqCheck]?'✓':{predict:'1',observe:'2',explain:'3'}[el.dataset.pqCheck];});find('[data-pq-evidence-count]').textContent=`${count} / 3 evidence checks`;find('[data-pq-record]').disabled=false;find('[data-pq-record]').textContent=count===3?'Record evidence in notebook':'Review missing evidence';find('[data-pq-record-hint]').textContent=count===3?'You have a prediction, an observation, and a causal explanation. Record this case.':missingEvidence();}
+  function renderMission(){const info=missionInfo[state.mission];find('[data-pq-mission]').value=state.mission;find('[data-pq-mission-kicker]').textContent=(worlds.find(w=>w.id===state.mission)||worlds[3]).label+' · MISSION';find('[data-pq-mission-title]').textContent=info.title;find('[data-pq-mission-subtitle]').textContent=info.subtitle;find('[data-pq-board-label]').textContent=info.board;if(state.mission==='pipeline')renderPipeline();else if(state.mission==='cache')renderCache();else renderSubleq();renderQuestions();}
+  function renderNotes(){find('[data-pq-notes]').innerHTML=state.notes.length?state.notes.map(n=>`<article class="pq-note"><span class="pq-kicker">✓ PREDICTED · OBSERVED · EXPLAINED</span><h3>${escape(n.title)}</h3><dl><dt>Case</dt><dd>${escape(n.input)}</dd><dt>Prediction</dt><dd>${escape(n.prediction)}</dd><dt>Evidence</dt><dd>${escape(n.result)}</dd><dt>Explanation</dt><dd>${escape(n.cause)}</dd></dl></article>`).join(''):'<div class="pq-notebook-empty"><h3>Your first discovery belongs here.</h3><p>Complete a mission by checking a prediction, observing the behavior, and identifying the cause. Record the case, then change an input to test whether your explanation still holds.</p><button class="pq-button pq-primary cursor-interaction" data-pq-route="play">Play a mission →</button></div>';find('[data-pq-export]').disabled=!state.notes.length;}
+  function updateLibrary(){all('[data-pq-lab-link]').forEach(button=>{if(button.dataset.pqLabLink===state.lab)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});updateLabContext();filterLibrary();updatePageIndex();}
+  let outlineSignature='';
+  function updatePageIndex(){
+    const content=find('#v');if(!content)return;
+    const allHeadings=[...content.querySelectorAll('h1,h2,h3,h4')];
+    // Assign stable anchors before applying reading-detail filters.
+    allHeadings.forEach((heading,index)=>{if(!heading.id)heading.id=`pq-topic-${state.lab}-${index}`;});
+    const headings=allHeadings.filter(h=>h.textContent.trim()&&!h.closest('[hidden]')&&!(state.detail==='b'&&h.closest('.adv,.pro'))&&!(state.detail==='i'&&h.closest('.pro,.beg'))&&!(state.detail==='p'&&h.closest('.beg,.plain')));
+    const signature=headings.map(h=>h.id+'|'+h.textContent).join('\n');if(signature===outlineSignature)return;outlineSignature=signature;
+    find('[data-pq-page-index]').innerHTML='<option value="">Jump to a heading…</option>'+headings.map(h=>`<option value="${escape(h.id)}">${escape(h.textContent.trim())}</option>`).join('');
+    find('[data-pq-index-status]').textContent=`${headings.length} topics in this section.`;
+  }
+  function render(){if(!missionInfo[state.mission])state.mission='pipeline';state.notes=Array.isArray(state.notes)?state.notes.slice(-50):[];all('[data-pq-screen]').forEach(el=>el.hidden=el.dataset.pqScreen!==state.route);all('[data-pq-route]').forEach(el=>{if(el.classList.contains('pq-nav'))el.setAttribute('aria-pressed',String(el.dataset.pqRoute===state.route));});find('[data-pq-note-count]').textContent=state.notes.length;find('[data-pq-record-count]').textContent=`${new Set(state.notes.map(n=>n.mission)).size} / 3`;renderMap();if(state.route==='play')renderMission();if(state.route==='notebook')renderNotes();const legacy=find('#pq-legacy');if(legacy)legacy.hidden=state.route!=='lab';if(state.route==='lab'){const desiredSection=state.lab;find('[data-pq-lab-section]').value=desiredSection;find('[data-pq-detail]').value=state.detail;setLv(state.detail);go(desiredSection);} }
+  root.addEventListener('click',event=>{const route=event.target.closest('[data-pq-route]');if(route){navigate(route.dataset.pqRoute);return;}const section=event.target.closest('[data-pq-lab-link]');if(section){openLab(section.dataset.pqLabLink);return;}const world=event.target.closest('[data-pq-world]');if(world){state.world=world.dataset.pqWorld;renderMap();persist();return;}const answer=event.target.closest('[data-pq-answer]');if(answer){state.answer=answer.dataset.pqAnswer;renderQuestions();persist();}});
+  find('[data-pq-start]').addEventListener('click',()=>{const w=currentWorld();if(missionInfo[w.id])chooseMission(w.id);else openLab(w.lab);});
+  find('[data-pq-world-lab]').addEventListener('click',()=>openLab(currentWorld().lab));
+  find('[data-pq-mission]').addEventListener('change',e=>chooseMission(e.target.value));
+  find('[data-pq-related]').addEventListener('click',()=>openLab(worlds.find(w=>w.id===state.mission).lab));
+  find('[data-pq-reports]').addEventListener('click',()=>openLab('cmp'));
+  find('[data-pq-settings]').addEventListener('change',event=>{if(event.target.matches('[data-pq-forward]')){state.forward=event.target.checked;resetChecks();}if(event.target.matches('[data-pq-ways]')){state.ways=Number(event.target.value);resetChecks();}renderMission();persist();});
+  find('[data-pq-next]').addEventListener('click',()=>{if(state.mission==='pipeline')state.cycle++;else if(state.mission==='cache')state.access++;else state.sqDone=true;renderMission();persist();});
+  find('[data-pq-back]').addEventListener('click',()=>{if(state.mission==='pipeline')state.cycle--;else if(state.mission==='cache')state.access--;else state.sqDone=false;renderMission();persist();});
+  find('[data-pq-finish]').addEventListener('click',()=>{if(state.mission==='pipeline')state.cycle=currentRun.result.cycles;else if(state.mission==='cache')state.access=16;else state.sqDone=true;renderMission();persist();});
+  find('[data-pq-explanation]').addEventListener('change',e=>{state.explanation=e.target.value;renderQuestions();persist();});
+  find('[data-pq-transfer]').addEventListener('click',()=>{const input=find('[data-pq-input]');if(!input.checkValidity()){input.reportValidity();return;}const v=Number(input.value);if(!Number.isInteger(v))return;if(state.mission==='cache')state.ways=v;else state.input=v;resetChecks();renderMission();persist();});
+  find('[data-pq-record]').addEventListener('click',()=>{if(!Object.values(checks()).every(Boolean)){
+      renderQuestions();
+      const check=checks();
+      const target=!check.predict?find('[data-pq-answer]'):!check.observe?find('[data-pq-next]'):find('[data-pq-explanation]');
+      target?.focus();
+      return;
+    }const info=missionInfo[state.mission];const n={mission:state.mission,title:worlds.find(w=>w.id===state.mission).title,input:state.mission==='pipeline'?`memory[0] = ${state.input}, memory[4] = 5; forwarding ${state.forward?'on':'off'}`:state.mission==='cache'?`64 B, 16 B blocks, ${state.ways} way(s), reads 0/64 alternating`:`A = ${state.input}, B = 3, target = 6`,prediction:info.answers().find(([v])=>v===state.answer)?.[1]||state.answer,cause:info.causes().find(([v])=>v===state.explanation)?.[1]||state.explanation,result:state.mission==='pipeline'?`Final memory[12] = ${currentRun.model.m[3]}; ${currentRun.result.cycles} cycles; ${currentRun.result.dataStalls} stalls; add EX = cycle ${currentRun.result.rows[1].EX}`:state.mission==='cache'?`Full sequence: ${currentRun.hits} hits, ${currentRun.misses} misses; AMAT ${currentRun.amat} cycles (1-cycle hit + 20-cycle miss penalty)`:`B = ${currentRun.m[1]}; next PC = ${currentRun.pc}`};const duplicate=state.notes.some(old=>old.mission===n.mission&&old.input===n.input);if(!duplicate)state.notes.push(n);state.route='notebook';render();persist();});
+  find('[data-pq-export]').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({title:'Processor Lab Quest — evidence notebook',model:'Educational simulator; results are simulated/calculated, not hardware measurements',records:state.notes},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='processor-quest-notebook.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+  const originalGo=go;
+  go=function(section){originalGo(section);if(sectionNames.some(([id])=>id===section)){state.lab=section;find('[data-pq-lab-section]').value=section;updateLibrary();if(state.route==='lab')persist();}};
+  find('[data-pq-library]').innerHTML=libraryGroups.map(([group,ids])=>`<div class="pq-library-group"><h3>${group}</h3><div>${ids.map(id=>`<button class="pq-library-link cursor-interaction" data-pq-lab-link="${id}"><span class="pq-library-icon">${labIcon(sectionMeta[id].icon)}</span><span class="pq-library-label">${escape(sectionNames.find(([s])=>s===id)[1])}</span><span class="pq-library-arrow" aria-hidden="true">↗</span></button>`).join('')}</div></div>`).join('');
+  find('[data-pq-library-search]').addEventListener('input',filterLibrary);
+  find('[data-pq-library-clear]').addEventListener('click',()=>{find('[data-pq-library-search]').value='';filterLibrary();find('[data-pq-library-search]').focus();});
+  function adjacentSection(offset){const index=sectionNames.findIndex(([id])=>id===state.lab)+offset;if(index>=0&&index<sectionNames.length){openLab(sectionNames[index][0]);find('[data-pq-section-title]').scrollIntoView({block:'start',behavior:'auto'});}}
+  find('[data-pq-section-prev]').addEventListener('click',()=>adjacentSection(-1));
+  find('[data-pq-section-next]').addEventListener('click',()=>adjacentSection(1));
+  if(window.matchMedia?.('(max-width:950px)').matches)find('[data-pq-library-panel]').open=false;
+  find('[data-pq-page-index]').addEventListener('change',event=>{const target=document.getElementById(event.target.value);if(target&&find('#v').contains(target)){target.scrollIntoView({behavior:'auto',block:'start'});find('[data-pq-index-status]').textContent=`Showing: ${target.textContent.trim()}`;}});
+  const pageObserver=new MutationObserver(updatePageIndex);pageObserver.observe(find('#v'),{childList:true,subtree:true});
+  find('[data-pq-lab-section]').innerHTML=sectionNames.map(([id,name])=>`<option value="${id}">${name}</option>`).join('');
+  find('[data-pq-lab-section]').addEventListener('change',e=>{state.lab=e.target.value;go(state.lab);persist();});
+  find('[data-pq-detail]').addEventListener('change',e=>{state.detail=e.target.value;setLv(state.detail);outlineSignature='';updatePageIndex();persist();});
+  const intro=find('[data-pq-intro]');
+  const introPane=find('#intro');
+  const hasIntroVideo=!!find('#intro-video-b64')?.textContent.trim();
+  let introOpener=null;
+  if(hasIntroVideo&&introPane){
+    find('.pq-app').appendChild(introPane);
+    introPane.setAttribute('role','dialog');introPane.setAttribute('aria-modal','true');introPane.setAttribute('aria-label','Processor Lab introduction video');
+    introPane.querySelectorAll('button').forEach(button=>button.classList.add('pq-button','cursor-interaction'));
+    iSkip=function(){find('#introv').pause();introPane.style.display='none';const target=introOpener?.isConnected?introOpener:find('.pq-nav[aria-pressed="true"]');target?.focus({preventScroll:true});};
+    function showIntro(){
+      introOpener=root.contains(document.activeElement)&&!introPane.contains(document.activeElement)?document.activeElement:null;
+      introPane.style.display='block';
+      if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){const video=iLoad();video.pause();video.currentTime=0;iSync();find('#intro-msg').textContent='Press Play to start the introduction.';}
+      else iPlay();
+      find('#ip').focus({preventScroll:true});
+    }
+    introPane.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();iSkip();}else if(event.key==='Tab'){const buttons=[...introPane.querySelectorAll('button:not([disabled])')];const first=buttons[0],last=buttons[buttons.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}});
+    intro.hidden=false;intro.addEventListener('click',showIntro);
+    root.addEventListener('pq:introduction-ready',showIntro,{once:true});
+  }
+  const styleState={accent:'#7042bc'};
+  function restyle(){find('.pq-app').style.setProperty('--pq-button',styleState.accent);find('.pq-app').style.setProperty('--pq-purple',`light-dark(${styleState.accent},#c2a0ff)`);}
+  if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:restyle});tweak.addColorPicker(styleState,'accent',{label:'Quest accent',reference:'--pq-button'});}
+  window.addEventListener('openai:set_globals',event=>{const saved=event.detail?.globals?.widgetState?.privateContent;if(saved?.questVersion===1){Object.assign(state,saved);render();}});
+  render();
+  if(hasIntroVideo)root.dispatchEvent(new Event('pq:introduction-ready'));
+})();
+</script>

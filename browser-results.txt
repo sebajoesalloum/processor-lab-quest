@@ -1,0 +1,149 @@
+Browser engine: chromium 153.0.8010.12
+BROWSER E2E (chromium): 147 passed, 0 skipped
+PASS navigation over
+PASS navigation build
+PASS navigation oisc
+PASS navigation mod
+PASS navigation exp
+PASS navigation sim
+PASS navigation cache
+PASS navigation bench
+PASS navigation sbx
+PASS navigation cmp
+PASS navigation demo
+PASS RV32I encoding displayed
+PASS MIPS32 encoding displayed
+PASS RV32I field-level bit diagram rendered
+PASS RV32I U-type immediate fields labelled
+PASS RV32I architecture differences explained
+PASS ISA builder default
+PASS ISA width selector
+PASS ISA data width selector
+PASS ISA assemble and run
+PASS ISA bad input handled
+PASS SUBLEQ demo
+PASS SUBLEQ demo rejects invalid
+PASS simulation step
+PASS simulation step back
+PASS MIPS32 datapath shown
+PASS six execution phases listed
+PASS ALU phase shows real operands 7 + 5 = 12
+PASS active components and wires highlighted
+PASS datapath values cross-checked
+PASS store phase shows memory write
+PASS control signals table shown
+PASS RV32I datapath differs from MIPS
+PASS SUBLEQ conceptual model labelled
+PASS x86 labelled as conceptual model
+PASS Play resumes past a breakpoint
+PASS invalid breakpoint reported inline (no alert)
+PASS five-stage pipeline rows rendered
+PASS pipeline CPI displayed
+PASS cycle-by-cycle stage strip and explanation
+PASS load-use stall explained
+PASS load-use hazard identified
+PASS forwarding path and value explained
+PASS forwarding off needs more cycles
+PASS final registers identical with forwarding on/off
+PASS pipeline operands verified against interpreter
+PASS taken-only branch policy lowers branch bubbles
+PASS invalid custom pipeline program shows an error instead of fake numbers
+PASS pipeline recovers after error
+PASS pipeline states it does not model x86
+PASS multicycle remains selectable and default model view returns
+PASS x86 signed max sim
+PASS custom benchmark math
+PASS all four custom benchmark models verified
+PASS benchmark restore
+PASS Fibonacci workload is selectable
+PASS Fibonacci verified on all four models
+PASS array maximum verified on all four models
+PASS looped SUBLEQ array extension disclosed
+PASS sandbox execution
+PASS sandbox invalid syntax
+PASS comparison report
+PASS workload selector
+PASS compare cache outcomes displayed
+PASS ALU memory branch mix displayed
+PASS report methodology categories displayed
+PASS cache-miss chart metric selectable
+PASS three cache configurations compared
+PASS first access is a compulsory miss
+PASS tag/index/offset split displayed
+PASS conflict miss with replacement explained
+PASS comparison explains the associativity effect
+PASS LRU 5 hits vs FIFO 3 hits
+PASS invalid address list rejected
+PASS header button opens the demonstration
+PASS experiment 1 explains MIPS slt+beq vs RV bge
+PASS experiment 1 steps both interpreters
+PASS experiment 1 resets
+PASS experiment 2: 18 vs 12 cycles
+PASS experiment 2 shows both pipeline diagrams
+PASS experiment 3 shows thrashing direct-mapped cache
+PASS experiment 3 export reflects the run
+PASS experiment 3 reruns reproducibly
+PASS return to the normal simulator
+PASS invalid clock not applied
+PASS valid clock applied
+PASS negative power rejected
+PASS sensitivity chart
+PASS print report rendered
+PASS print PDF produced
+PASS print cleanup
+PASS CSV download
+PASS responsive overview 390
+PASS responsive build 390
+PASS responsive oisc 390
+PASS responsive mod 390
+PASS responsive exp 390
+PASS responsive sim 390
+PASS responsive cache 390
+PASS responsive bench 390
+PASS responsive sbx 390
+PASS responsive cmp 390
+PASS responsive demo 390
+PASS responsive pipeline mode 390
+PASS responsive datapath 390
+PASS responsive demo experiment 1 390
+PASS responsive demo experiment 2 390
+PASS responsive demo experiment 3 390
+PASS responsive overview 768
+PASS responsive build 768
+PASS responsive oisc 768
+PASS responsive mod 768
+PASS responsive exp 768
+PASS responsive sim 768
+PASS responsive cache 768
+PASS responsive bench 768
+PASS responsive sbx 768
+PASS responsive cmp 768
+PASS responsive demo 768
+PASS responsive pipeline mode 768
+PASS responsive datapath 768
+PASS responsive demo experiment 1 768
+PASS responsive demo experiment 2 768
+PASS responsive demo experiment 3 768
+PASS responsive overview 1366
+PASS responsive build 1366
+PASS responsive oisc 1366
+PASS responsive mod 1366
+PASS responsive exp 1366
+PASS responsive sim 1366
+PASS responsive cache 1366
+PASS responsive bench 1366
+PASS responsive sbx 1366
+PASS responsive cmp 1366
+PASS responsive demo 1366
+PASS responsive pipeline mode 1366
+PASS responsive datapath 1366
+PASS responsive demo experiment 1 1366
+PASS responsive demo experiment 2 1366
+PASS responsive demo experiment 3 1366
+PASS tab arrow-key navigation
+PASS reduced-motion preference skips intro timer
+PASS WCAG AA contrast light theme
+PASS WCAG AA contrast of new badges and pipeline stages light theme: [9.27, 8.3, 8.15, 13.09, 15.16]
+PASS WCAG AA contrast dark theme
+PASS WCAG AA contrast of new badges and pipeline stages dark theme: [9.27, 8.3, 8.15, 13.09, 12.76]
+PASS browser JavaScript errors: []
